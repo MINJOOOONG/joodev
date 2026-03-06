@@ -1,0 +1,284 @@
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-dark-950 text-gray-200 antialiased font-sans;
+  }
+
+  * {
+    font-family: var(--font-galmuri), system-ui, sans-serif;
+  }
+
+  ::selection {
+    @apply bg-accent-purple/30 text-white;
+  }
+
+  /* Custom scrollbar */
+  ::-webkit-scrollbar {
+    width: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: rgba(167, 139, 250, 0.2);
+    border-radius: 3px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: rgba(167, 139, 250, 0.4);
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl bg-accent-purple px-5 py-2.5 text-sm font-semibold text-dark-950 shadow-glow-sm transition-all duration-200 hover:bg-accent-pink hover:shadow-glow active:scale-[0.97];
+  }
+
+  .btn-secondary {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl border border-surface-border bg-surface-raised px-5 py-2.5 text-sm font-semibold text-gray-300 transition-all duration-200 hover:bg-surface-overlay hover:border-surface-border-light hover:text-white active:scale-[0.97];
+  }
+
+  .btn-ghost {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl px-3 py-2 text-sm font-medium text-gray-400 transition-all duration-200 hover:bg-surface-raised hover:text-gray-200;
+  }
+
+  .card {
+    @apply rounded-2xl border border-surface-border bg-surface text-gray-200 shadow-card transition-all duration-300;
+  }
+
+  .card-raised {
+    @apply rounded-2xl border border-surface-border-light bg-surface-raised shadow-soft transition-all duration-300;
+  }
+
+  .input-field {
+    @apply block w-full rounded-xl border border-surface-border bg-surface px-4 py-2.5 text-sm text-gray-200 shadow-sm placeholder:text-gray-500 focus:border-accent-purple/50 focus:ring-2 focus:ring-accent-purple/20 focus:outline-none transition-all duration-200;
+  }
+
+  .tag {
+    @apply rounded-lg bg-accent-purple/10 px-2.5 py-0.5 text-[11px] font-semibold text-accent-purple border border-accent-purple/15;
+  }
+}
+
+/* =============================================
+   TipTap Editor Styles (Writing Mode)
+   ============================================= */
+.tiptap {
+  @apply outline-none min-h-[400px] p-6 text-gray-200 leading-relaxed;
+}
+
+.tiptap p {
+  @apply mb-4 leading-[1.8] text-[15px];
+}
+
+.tiptap h1 {
+  @apply text-[28px] font-bold mt-12 mb-4 text-white leading-tight;
+}
+
+.tiptap h2 {
+  @apply text-[22px] font-bold mt-10 mb-3 text-white leading-tight;
+}
+
+.tiptap h3 {
+  @apply text-lg font-bold mt-8 mb-2 text-white leading-snug;
+}
+
+.tiptap ul {
+  @apply list-disc pl-6 mb-4;
+}
+
+.tiptap ol {
+  @apply list-decimal pl-6 mb-4;
+}
+
+.tiptap li {
+  @apply mb-1.5 leading-[1.8] text-[15px];
+}
+
+.tiptap a {
+  @apply text-accent-purple underline decoration-accent-purple/40 underline-offset-2 hover:decoration-accent-purple transition-colors;
+}
+
+.tiptap img {
+  @apply max-w-full rounded-xl my-6;
+}
+
+.tiptap blockquote {
+  @apply border-l-[3px] border-accent-purple/40 bg-accent-purple/[0.04] rounded-r-xl pl-5 pr-4 py-4 my-6 text-gray-400 not-italic;
+}
+
+.tiptap blockquote p {
+  @apply mb-0;
+}
+
+.tiptap pre {
+  @apply bg-dark-975 text-gray-300 rounded-xl p-5 my-6 overflow-x-auto font-mono text-[13px] leading-[1.7] border border-surface-border;
+}
+
+.tiptap code {
+  @apply bg-accent-purple/10 text-accent-purple rounded-md px-1.5 py-0.5 text-[13px] font-mono;
+}
+
+.tiptap pre code {
+  @apply bg-transparent text-gray-300 p-0 text-[13px];
+}
+
+.tiptap hr {
+  @apply border-surface-border my-10;
+}
+
+.tiptap div[data-youtube-video] {
+  @apply my-6;
+}
+
+.tiptap div[data-youtube-video] iframe {
+  @apply w-full aspect-video rounded-xl;
+}
+
+.tiptap p.is-editor-empty:first-child::before {
+  @apply text-gray-600 float-left h-0 pointer-events-none;
+  content: attr(data-placeholder);
+}
+
+/* =============================================
+   Article Renderer Styles (toss.tech inspired)
+   ============================================= */
+.article-content {
+  @apply text-gray-300 leading-[1.8];
+}
+
+.article-content p {
+  @apply text-[16px] leading-[1.85] mb-6;
+}
+
+.article-content h1 {
+  @apply text-[28px] font-bold mt-14 mb-5 text-white leading-tight tracking-tight;
+}
+
+.article-content h2 {
+  @apply text-[22px] font-bold mt-12 mb-4 text-white leading-tight tracking-tight;
+}
+
+.article-content h3 {
+  @apply text-lg font-bold mt-10 mb-3 text-white leading-snug;
+}
+
+.article-content ul {
+  @apply pl-6 mb-6;
+  list-style: none;
+}
+
+.article-content ul > li {
+  @apply relative pl-1 mb-2.5 text-[16px] leading-[1.85];
+}
+
+.article-content ul > li::before {
+  content: "•";
+  @apply absolute -left-5 text-accent-purple/60;
+}
+
+.article-content ol {
+  @apply list-decimal pl-6 mb-6;
+}
+
+.article-content ol > li {
+  @apply mb-2.5 text-[16px] leading-[1.85];
+}
+
+.article-content a {
+  @apply text-accent-purple underline decoration-accent-purple/30 underline-offset-2 hover:decoration-accent-purple/80 transition-all duration-200;
+}
+
+.article-content img {
+  @apply max-w-full rounded-2xl my-8 shadow-soft;
+}
+
+.article-content blockquote {
+  @apply border-l-[3px] border-accent-purple/40 bg-accent-purple/[0.04] rounded-r-xl pl-5 pr-4 py-4 my-8 text-gray-400;
+}
+
+.article-content blockquote p {
+  @apply mb-0 text-[15px] leading-[1.8];
+}
+
+.article-content pre {
+  @apply bg-[#0d0919] text-gray-300 rounded-2xl p-6 my-8 overflow-x-auto font-mono text-[13.5px] leading-[1.75] border border-surface-border/80;
+}
+
+.article-content code {
+  @apply bg-accent-purple/10 text-accent-purple rounded-md px-1.5 py-0.5 text-[14px] font-mono font-medium;
+}
+
+.article-content pre code {
+  @apply bg-transparent text-gray-300 p-0 text-[13.5px] font-normal;
+}
+
+.article-content hr {
+  @apply border-surface-border/60 my-12;
+}
+
+.article-content div[data-youtube-video] {
+  @apply my-8;
+}
+
+.article-content div[data-youtube-video] iframe {
+  @apply w-full aspect-video rounded-2xl;
+}
+
+/* Smooth fade-in animation */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in-up {
+  animation: fadeInUp 0.5s ease-out;
+}
+
+/* =============================================
+   Paw Snow - falling paw prints animation
+   ============================================= */
+.paw-snow-container {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  overflow: hidden;
+}
+
+.paw-snow-flake {
+  position: absolute;
+  top: -30px;
+  animation: pawFall linear infinite;
+  will-change: transform;
+}
+
+@keyframes pawFall {
+  0% {
+    transform: translateY(-30px) translateX(0) rotate(0deg);
+    opacity: 0;
+  }
+  10% {
+    opacity: 1;
+  }
+  90% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(calc(100vh + 30px)) translateX(40px) rotate(45deg);
+    opacity: 0;
+  }
+}
