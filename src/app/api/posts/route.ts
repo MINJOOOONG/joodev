@@ -19,7 +19,7 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { title, excerpt, contentJson, coverUrl, images, status, tags } = body;
+    const { title, excerpt, contentJson, coverUrl, images, status, tags, category } = body;
 
     if (!title || typeof title !== "string") {
       return NextResponse.json(
@@ -44,6 +44,7 @@ export async function POST(request: NextRequest) {
         contentJson: contentJson || {},
         coverUrl: coverUrl || null,
         images: Array.isArray(images) ? images : [],
+        category: category || "Uncategorized",
         status: status === "PUBLISHED" ? "PUBLISHED" : "DRAFT",
         publishedAt: status === "PUBLISHED" ? new Date() : null,
         tags: {

@@ -3,11 +3,14 @@
 import { type Editor } from "@tiptap/react";
 import { cn } from "@/lib/utils";
 import { useState, useCallback } from "react";
+import { useToast } from "@/components/ui/toast";
 
 interface ToolbarProps {
   editor: Editor;
   onImageUpload: () => void;
   onVideoUpload: () => void;
+  htmlMode?: boolean;
+  onToggleHtmlMode?: () => void;
 }
 
 const FONT_SIZES = [12, 14, 16, 18, 20, 24, 28, 32];
@@ -16,7 +19,30 @@ const COLORS = [
   "#fdba74", "#fca5a5", "#fbbf24", "#f472b6", "#67e8f9",
 ];
 
-export default function Toolbar({ editor, onImageUpload, onVideoUpload }: ToolbarProps) {
+const CODE_LANGUAGES = [
+  { value: "javascript", label: "JavaScript" },
+  { value: "typescript", label: "TypeScript" },
+  { value: "java", label: "Java" },
+  { value: "python", label: "Python" },
+  { value: "bash", label: "Bash" },
+  { value: "html", label: "HTML" },
+  { value: "mermaid", label: "Mermaid" },
+];
+
+function isValidYouTubeUrl(url: string): boolean {
+  return /^(https?:\/\/)?(www\.)?(youtube\.com\/(watch\?v=|embed\/|shorts\/)|youtu\.be\/)[\w-]+/.test(url);
+}
+
+function hasYouTubeEmbed(editor: Editor): boolean {
+  let found = false;
+  editor.state.doc.descendants((node) => {
+    if (node.type.name === "youtube") found = true;
+  });
+  return found;
+}
+
+export default function Toolbar({ editor, onImageUpload, onVideoUpload, htmlMode, onToggleHtmlMode }: ToolbarProps) {
+  const { toast } = useToast();
   const [showFontSize, setShowFontSize] = useState(false);
   const [showColors, setShowColors] = useState(false);
   const [showYouTube, setShowYouTube] = useState(false);
@@ -24,6 +50,15 @@ export default function Toolbar({ editor, onImageUpload, onVideoUpload }: Toolba
   const [showLink, setShowLink] = useState(false);
   const [linkUrl, setLinkUrl] = useState("");
   const [linkNewTab, setLinkNewTab] = useState(true);
+  const [showCodeLang, setShowCodeLang] = useState(false);
+
+  const closeAllDropdowns = useCallback(() => {
+    setShowFontSize(false);
+    setShowColors(false);
+    setShowYouTube(false);
+    setShowLink(false);
+    setShowCodeLang(false);
+  }, []);
 
   const setFontSize = useCallback(
     (size: number) => {
@@ -42,12 +77,19 @@ export default function Toolbar({ editor, onImageUpload, onVideoUpload }: Toolba
   );
 
   const addYouTube = useCallback(() => {
-    if (youtubeUrl) {
-      editor.commands.setYoutubeVideo({ src: youtubeUrl });
-      setYoutubeUrl("");
-      setShowYouTube(false);
+    if (!youtubeUrl.trim()) return;
+    if (!isValidYouTubeUrl(youtubeUrl)) {
+      toast("올바른 YouTube URL을 입력해주세요.", "error");
+      return;
     }
-  }, [editor, youtubeUrl]);
+    if (hasYouTubeEmbed(editor)) {
+      toast("YouTube 영상은 글 하나당 1개만 삽입할 수 있습니다.", "info");
+      return;
+    }
+    editor.commands.setYoutubeVideo({ src: youtubeUrl });
+    setYoutubeUrl("");
+    setShowYouTube(false);
+  }, [editor, youtubeUrl, toast]);
 
   const setLink = useCallback(() => {
     if (linkUrl) {
@@ -65,6 +107,23 @@ export default function Toolbar({ editor, onImageUpload, onVideoUpload }: Toolba
     }
   }, [editor, linkUrl, linkNewTab]);
 
+  const insertCodeBlock = useCallback(
+    (language: string) => {
+      editor
+        .chain()
+        .focus()
+        .insertContent([
+          { type: "codeBlock", attrs: { language } },
+          { type: "paragraph" },
+        ])
+        .run();
+      const pos = editor.state.selection.$from.before();
+      editor.chain().setTextSelection(pos).run();
+      setShowCodeLang(false);
+    },
+    [editor]
+  );
+
   const ToolbarButton = ({
     onClick,
     active,
@@ -78,10 +137,13 @@ export default function Toolbar({ editor, onImageUpload, onVideoUpload }: Toolba
   }) => (
     <button
       type="button"
-      onClick={onClick}
+      onMouseDown={(e) => {
+        e.preventDefault();
+        onClick();
+      }}
       title={title}
       className={cn(
-        "rounded-lg p-1.5 text-sm transition-all duration-150 text-gray-400 hover:bg-surface-overlay hover:text-gray-200",
+        "rounded-lg p-1.5 text-sm transition-all duration-150 text-content-3 hover:bg-surface-overlay hover:text-content-1",
         active && "bg-accent-purple/10 text-accent-purple"
       )}
     >
@@ -95,7 +157,7 @@ export default function Toolbar({ editor, onImageUpload, onVideoUpload }: Toolba
       <ToolbarButton
         onClick={() => editor.chain().focus().toggleBold().run()}
         active={editor.isActive("bold")}
-        title="굵게"
+        title="굵게 (Ctrl+B)"
       >
         <strong>B</strong>
       </ToolbarButton>
@@ -104,16 +166,16 @@ export default function Toolbar({ editor, onImageUpload, onVideoUpload }: Toolba
       <ToolbarButton
         onClick={() => editor.chain().focus().toggleItalic().run()}
         active={editor.isActive("italic")}
-        title="기울임"
+        title="기울임 (Ctrl+I)"
       >
-        <em>I</em>
+        <em className="font-serif">I</em>
       </ToolbarButton>
 
       {/* Underline */}
       <ToolbarButton
         onClick={() => editor.chain().focus().toggleUnderline().run()}
         active={editor.isActive("underline")}
-        title="밑줄"
+        title="밑줄 (Ctrl+U)"
       >
         <span className="underline">U</span>
       </ToolbarButton>
@@ -133,8 +195,8 @@ export default function Toolbar({ editor, onImageUpload, onVideoUpload }: Toolba
       <div className="relative">
         <ToolbarButton
           onClick={() => {
-            setShowFontSize(!showFontSize);
-            setShowColors(false);
+            closeAllDropdowns();
+            setShowFontSize((v) => !v);
           }}
           title="글자 크기"
         >
@@ -145,8 +207,11 @@ export default function Toolbar({ editor, onImageUpload, onVideoUpload }: Toolba
             {FONT_SIZES.map((size) => (
               <button
                 key={size}
-                onClick={() => setFontSize(size)}
-                className="block w-full rounded-lg px-3 py-1 text-left text-sm text-gray-300 hover:bg-surface-overlay hover:text-white transition-colors"
+                onMouseDown={(e) => {
+                  e.preventDefault();
+                  setFontSize(size);
+                }}
+                className="block w-full rounded-lg px-3 py-1 text-left text-sm text-content-2 hover:bg-surface-overlay hover:text-heading transition-colors"
               >
                 {size}px
               </button>
@@ -159,8 +224,8 @@ export default function Toolbar({ editor, onImageUpload, onVideoUpload }: Toolba
       <div className="relative">
         <ToolbarButton
           onClick={() => {
-            setShowColors(!showColors);
-            setShowFontSize(false);
+            closeAllDropdowns();
+            setShowColors((v) => !v);
           }}
           title="글자 색상"
         >
@@ -178,7 +243,10 @@ export default function Toolbar({ editor, onImageUpload, onVideoUpload }: Toolba
               {COLORS.map((color) => (
                 <button
                   key={color}
-                  onClick={() => setColor(color)}
+                  onMouseDown={(e) => {
+                    e.preventDefault();
+                    setColor(color);
+                  }}
                   className="h-6 w-6 rounded border border-surface-border hover:scale-110 transition-transform"
                   style={{ backgroundColor: color }}
                   title={color}
@@ -188,25 +256,6 @@ export default function Toolbar({ editor, onImageUpload, onVideoUpload }: Toolba
           </div>
         )}
       </div>
-
-      <div className="mx-1 h-5 w-px bg-surface-border" />
-
-      {/* Headings */}
-      <ToolbarButton
-        onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
-        active={editor.isActive("heading", { level: 2 })}
-        title="제목 2"
-      >
-        H2
-      </ToolbarButton>
-
-      <ToolbarButton
-        onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()}
-        active={editor.isActive("heading", { level: 3 })}
-        title="제목 3"
-      >
-        H3
-      </ToolbarButton>
 
       <div className="mx-1 h-5 w-px bg-surface-border" />
 
@@ -235,7 +284,8 @@ export default function Toolbar({ editor, onImageUpload, onVideoUpload }: Toolba
       <div className="relative">
         <ToolbarButton
           onClick={() => {
-            setShowLink(!showLink);
+            closeAllDropdowns();
+            setShowLink((v) => !v);
             setLinkUrl(editor.getAttributes("link").href || "");
           }}
           active={editor.isActive("link")}
@@ -254,8 +304,9 @@ export default function Toolbar({ editor, onImageUpload, onVideoUpload }: Toolba
               placeholder="https://..."
               className="input-field mb-2 !text-xs"
               onKeyDown={(e) => e.key === "Enter" && setLink()}
+              autoFocus
             />
-            <label className="flex items-center gap-2 text-xs text-gray-400 mb-2">
+            <label className="flex items-center gap-2 text-xs text-content-3 mb-2">
               <input
                 type="checkbox"
                 checked={linkNewTab}
@@ -265,11 +316,18 @@ export default function Toolbar({ editor, onImageUpload, onVideoUpload }: Toolba
               새 창에서 열기
             </label>
             <div className="flex gap-2">
-              <button onClick={setLink} className="btn-primary !py-1 !px-2.5 !text-xs !rounded-lg">
+              <button
+                onMouseDown={(e) => {
+                  e.preventDefault();
+                  setLink();
+                }}
+                className="btn-primary !py-1 !px-2.5 !text-xs !rounded-lg"
+              >
                 적용
               </button>
               <button
-                onClick={() => {
+                onMouseDown={(e) => {
+                  e.preventDefault();
                   editor.chain().focus().unsetLink().run();
                   setShowLink(false);
                 }}
@@ -295,21 +353,42 @@ export default function Toolbar({ editor, onImageUpload, onVideoUpload }: Toolba
         </svg>
       </ToolbarButton>
 
-      {/* Code Block */}
-      <ToolbarButton
-        onClick={() => editor.chain().focus().toggleCodeBlock().run()}
-        active={editor.isActive("codeBlock")}
-        title="코드 블록"
-      >
-        <span className="font-mono text-xs">&lt;/&gt;</span>
-      </ToolbarButton>
+      {/* Code Block with language selector */}
+      <div className="relative">
+        <ToolbarButton
+          onClick={() => {
+            closeAllDropdowns();
+            setShowCodeLang((v) => !v);
+          }}
+          active={editor.isActive("codeBlock")}
+          title="코드 블록"
+        >
+          <span className="font-mono text-xs">&lt;/&gt;</span>
+        </ToolbarButton>
+        {showCodeLang && (
+          <div className="absolute top-full left-0 z-10 mt-1 rounded-xl border border-surface-border bg-surface-raised shadow-soft p-1 min-w-[120px]">
+            {CODE_LANGUAGES.map((lang) => (
+              <button
+                key={lang.value}
+                onMouseDown={(e) => {
+                  e.preventDefault();
+                  insertCodeBlock(lang.value);
+                }}
+                className="block w-full rounded-lg px-3 py-1.5 text-left text-sm text-content-2 hover:bg-surface-overlay hover:text-heading transition-colors"
+              >
+                {lang.label}
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
 
       {/* Horizontal Rule */}
       <ToolbarButton
         onClick={() => editor.chain().focus().setHorizontalRule().run()}
         title="구분선"
       >
-        <span className="text-xs">---</span>
+        <span className="text-xs">&mdash;</span>
       </ToolbarButton>
 
       <div className="mx-1 h-5 w-px bg-surface-border" />
@@ -331,8 +410,15 @@ export default function Toolbar({ editor, onImageUpload, onVideoUpload }: Toolba
       {/* YouTube */}
       <div className="relative">
         <ToolbarButton
-          onClick={() => setShowYouTube(!showYouTube)}
-          title="YouTube 임베드"
+          onClick={() => {
+            if (hasYouTubeEmbed(editor)) {
+              toast("YouTube 영상은 글 하나당 1개만 삽입할 수 있습니다.", "info");
+              return;
+            }
+            closeAllDropdowns();
+            setShowYouTube((v) => !v);
+          }}
+          title="YouTube 임베드 (1개 제한)"
         >
           <span className="text-xs font-bold text-red-400">YT</span>
         </ToolbarButton>
@@ -345,6 +431,7 @@ export default function Toolbar({ editor, onImageUpload, onVideoUpload }: Toolba
               placeholder="YouTube URL 입력..."
               className="input-field mb-2 !text-xs"
               onKeyDown={(e) => e.key === "Enter" && addYouTube()}
+              autoFocus
             />
             <button
               onClick={addYouTube}
@@ -355,6 +442,19 @@ export default function Toolbar({ editor, onImageUpload, onVideoUpload }: Toolba
           </div>
         )}
       </div>
+
+      {onToggleHtmlMode && (
+        <>
+          <div className="mx-1 h-5 w-px bg-surface-border" />
+          <ToolbarButton
+            onClick={onToggleHtmlMode}
+            active={htmlMode}
+            title="HTML 모드"
+          >
+            <span className="font-mono text-xs">&lt;HTML&gt;</span>
+          </ToolbarButton>
+        </>
+      )}
     </div>
   );
 }

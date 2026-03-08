@@ -13,6 +13,7 @@ interface PostData {
   contentJson: JSONContent;
   coverUrl: string | null;
   images: string[];
+  category: string;
   status: "DRAFT" | "PUBLISHED";
   tags: { name: string }[];
 }

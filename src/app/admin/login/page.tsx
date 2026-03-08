@@ -2,7 +2,7 @@
 
 import { useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
-import { CatFace, PawPrint } from "@/components/ui/cat-icon";
+import { CatFace } from "@/components/ui/cat-icon";
 
 export default function AdminLoginPage() {
   const [password, setPassword] = useState("");
@@ -44,12 +44,12 @@ export default function AdminLoginPage() {
         {/* Cat logo */}
         <div className="mb-8 text-center">
           <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-accent-purple to-accent-pink shadow-glow">
-            <CatFace size={40} className="text-white" />
+            <CatFace size={40} className="text-dark-950" />
           </div>
-          <h1 className="text-2xl font-extrabold tracking-tight text-white">
+          <h1 className="text-2xl font-extrabold tracking-tight text-heading">
             관리자 로그인
           </h1>
-          <p className="mt-1 text-sm text-gray-500">
+          <p className="mt-1 text-sm text-content-muted">
             비밀번호를 입력해 주세요 ~(=^..^)
           </p>
         </div>
@@ -63,7 +63,7 @@ export default function AdminLoginPage() {
             <div>
               <label
                 htmlFor="password"
-                className="block text-sm font-semibold text-gray-400 mb-1.5"
+                className="block text-sm font-semibold text-content-3 mb-1.5"
               >
                 비밀번호
               </label>
@@ -97,21 +97,12 @@ export default function AdminLoginPage() {
                   로그인 중...
                 </>
               ) : (
-                <>
-                  로그인
-                  <PawPrint size={14} />
-                </>
+                <>로그인</>
               )}
             </button>
           </div>
         </form>
 
-        {/* Paw trail */}
-        <div className="mt-6 flex justify-center gap-3 text-accent-purple/15">
-          <PawPrint size={10} className="rotate-[-20deg]" />
-          <PawPrint size={12} className="rotate-[10deg]" />
-          <PawPrint size={10} className="rotate-[-5deg]" />
-        </div>
       </div>
     </div>
   );

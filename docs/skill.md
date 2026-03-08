@@ -1,144 +1,143 @@
-# JooDev Blog - Tech Skills & Stack
+# JooDev Blog - 기능 현황
 
-이 프로젝트에서 사용된 기술 스택과 각 기술이 어떤 역할을 하는지 정리합니다.
+이 문서는 프로젝트의 기능별 구현 상태를 정리합니다.
 
-## Frontend
+## 구현 완료
 
-### Next.js 14 (App Router)
-- **역할**: 풀스택 React 프레임워크
-- **사용 기능**:
-  - App Router (파일 기반 라우팅)
-  - Server Components (공개 페이지 SSR)
-  - Route Handlers (API 엔드포인트)
-  - Middleware (인증 가드)
-  - ISR (Incremental Static Regeneration, 60초 revalidate)
-  - Route Groups: `(public)` 그룹으로 공개 레이아웃 분리
-  - Dynamic Routes: `[slug]`, `[id]` 파라미터
+### 인증 시스템
+- 단일 비밀번호 로그인 (평문 비교)
+- JWT 세션 (HS256, 7일 만료, httpOnly 쿠키)
+- Middleware 기반 인증 가드
+- IP 기반 Rate Limiting (15분/5회)
 
-### React 18
-- **역할**: UI 라이브러리
-- **사용 패턴**:
-  - `useState`, `useEffect`, `useCallback`, `useRef` 훅
-  - `useRouter`, `usePathname`, `useParams` (Next.js 라우터 훅)
-  - `dynamic()` import로 에디터 클라이언트 전용 로딩
-  - `"use client"` directive로 클라이언트/서버 컴포넌트 분리
+### 글 관리 (CRUD)
+- 글 목록 조회 (관리자: 전체, 공개: PUBLISHED만)
+- 글 작성 (제목, 요약, 본문, 태그, 이미지 갤러리)
+- 글 수정 (동일 폼, images 필드 포함)
+- 글 삭제 (관리자 목록에서)
+- 슬러그 자동 생성 (한글 fallback)
+- DRAFT / PUBLISHED 상태 관리
 
-### TypeScript
-- **역할**: 타입 안전성
-- **사용 패턴**:
-  - 인터페이스 정의 (`BlogCardProps`, `PostFormProps` 등)
-  - 제네릭 (`Promise<Metadata>`, `Promise<{ slug: string }>`)
-  - TipTap 커스텀 확장 타입 선언 (`declare module "@tiptap/core"`)
+### 파일 업로드
+- 이미지 (JPEG, PNG, WebP, GIF) + 영상 (MP4, WebM)
+- 50MB 파일 크기 제한
+- 로컬 개발: `public/uploads/`에 파일 저장
+- 배포: Vercel Blob 사용 (BLOB_READ_WRITE_TOKEN 필요)
+- 에디터 내 드래그 앤 드롭 업로드
+- XHR 기반 업로드 진행률 표시
 
-### Tailwind CSS 3.4
-- **역할**: 유틸리티 기반 스타일링
-- **커스텀 설정**:
-  - 다크 퍼플 색상 팔레트 (`dark-*`, `accent-*`, `surface-*`)
-  - 커스텀 그림자 (`glow`, `glow-sm`, `card`, `card-hover`)
-  - 커스텀 애니메이션 (`float`, `float-slow`, `fade-in-up`)
-  - `@layer components`로 재사용 컴포넌트 클래스 정의
+### 에디터 (TipTap)
+- 기본 서식: Bold, Italic, Underline, Strike
+- 제목: H2, H3
+- 목록: 불릿 리스트, 숫자 리스트
+- 인용문 (Blockquote)
+- 구분선 (Horizontal Rule)
+- 하이퍼링크 (URL 입력, 새 창 옵션, 링크 제거)
+- 글자 크기 조절 (12~32px)
+- 글자 색상 (10색 팔레트)
+- 이미지 업로드 (에디터 내 삽입)
+- 영상 업로드 (에디터 내 삽입)
+- YouTube 임베드 (URL 입력, 글 당 1개 제한)
+- 코드 블록 (Java / HTML / Mermaid 언어 선택)
+- 신택스 하이라이팅 (lowlight + highlight.js)
+- Placeholder 텍스트
+- 키보드 단축키 지원 (Ctrl+B, Ctrl+I, Ctrl+U 등)
+- 툴바 버튼 단축키 툴팁 표시
 
-## Editor
+### 글 렌더링
+- TipTap 읽기 전용 렌더러 (PostRenderer)
+- toss.tech 스타일 아티클 렌더링 (.article-content)
+- 코드 블록 언어 라벨 표시 (pre::before)
+- 신택스 하이라이팅 (다크 테마)
+- Mermaid 다이어그램 자동 렌더링 (코드 블록 → SVG)
+- YouTube 임베드 반응형 표시
 
-### TipTap (ProseMirror)
-- **역할**: 리치 텍스트 에디터
-- **사용 확장**:
-  - `StarterKit`: 기본 (bold, italic, headings, lists, code block 등)
-  - `Underline`: 밑줄
-  - `Link`: 하이퍼링크 (새 탭 옵션)
-  - `Image`: 이미지 삽입
-  - `Youtube`: YouTube 임베드
-  - `TextStyle` + `Color`: 글자 색상
-  - `Placeholder`: 플레이스홀더 텍스트
-  - `FontSize` (커스텀): 글자 크기 조절
-- **구현 패턴**:
-  - JSON 포맷으로 콘텐츠 저장/로드
-  - 읽기 전용 렌더러 (`editable: false`)
-  - 드래그 앤 드롭 이미지/영상 업로드
-  - 3초 디바운스 자동 저장
-  - XHR 기반 업로드 진행률 표시
+### 이미지 갤러리 (글 작성 폼)
+- 이미지 업로드 (최대 10장)
+- 커버 이미지 선택 (클릭)
+- 이미지 삭제
+- 업로드 제한 toast 알림
 
-## Backend
+### 토스트 알림
+- Context 기반 글로벌 토스트 시스템
+- success / error / info 타입
+- 3초 자동 닫힘, 클릭 닫힘
 
-### Prisma ORM
-- **역할**: 데이터베이스 ORM
-- **사용 패턴**:
-  - 싱글턴 클라이언트 (`global.prisma`)
-  - 관계형 쿼리 (`include: { tags: true }`)
-  - Cascade Delete (Post 삭제 시 Tag 자동 삭제)
-  - `@map()` 으로 snake_case DB 컬럼 매핑
-  - `findMany`, `findUnique`, `create`, `update`, `delete`
+### 공개 페이지
+- 랜딩 페이지 (히어로 + 최근 게시글 + 고양이 애니메이션)
+- 블로그 목록 페이지 (카드 그리드)
+- 글 상세 페이지 (아티클 렌더링)
+- 404 페이지
 
-### PostgreSQL
-- **역할**: 관계형 데이터베이스
-- **모델**: Post, Tag (1:N 관계)
-- **특이사항**: `contentJson`을 `Json` 타입으로 저장 (TipTap ProseMirror 포맷)
+### 디자인 시스템
+- 다크 퍼플 테마 (전체 적용)
+- 고양이 테마 SVG 아이콘 (CatFace, PawPrint, SleepingCat, HeroCat)
+- 커스텀 컴포넌트 클래스 (btn, card, input-field, tag)
+- 떠다니는 발자국 애니메이션 (paw-snow)
 
-### JWT 인증 (jose)
-- **역할**: 세션 관리
-- **구현**:
-  - `HS256` 알고리즘
-  - 7일 만료 (`setExpirationTime`)
-  - httpOnly 쿠키 저장 (XSS 방지)
-  - Middleware에서 Edge Runtime 검증
-  - Rate Limiting (IP 기반, 15분/5회)
+### 인프라
+- GitHub 리포지토리 (joodev) 생성 완료
+- Neon PostgreSQL 연결 완료
+- Prisma db push 완료
+- 로컬 CRUD 검증 완료
+- Docker 의존성 제거 상태
 
-### Vercel Blob
-- **역할**: 파일 스토리지
-- **구현**:
-  - 이미지 (JPEG, PNG, WebP, GIF) + 영상 (MP4, WebM)
-  - 50MB 파일 크기 제한
-  - 파일명: `blog/{timestamp}-{random}.{ext}`
-  - public access
+## 구현 중 (진행 중)
 
-## Utilities
+### 에디터 고도화
+- 툴바 버튼 onMouseDown 패턴 적용 (포커스 유지) → 적용 완료, 브라우저 검증 필요
+- 코드 블록 삽입 후 이어서 글쓰기 UX → 구현 완료, 검증 필요
 
-### clsx
-- **역할**: 조건부 className 조합
-- **사용**: `cn()` 헬퍼 함수로 래핑
+### Vercel 배포 준비
+- Vercel 프로젝트 생성 필요
+- BLOB_READ_WRITE_TOKEN 발급 필요
+- 환경변수 설정 필요
 
-### slugify
-- **역할**: URL 슬러그 생성
-- **특이사항**: CJK(한글) 문자는 strip되므로 timestamp 기반 fallback
+## 미구현 (추후 검토)
 
-### date-fns
-- **역할**: 날짜 포맷팅
-- **사용**: `formatDate()` - 한국어 날짜 포맷 (`ko-KR`)
+### 에디터 추가 기능
+- 태그 칩 UI (현재: 쉼표 구분 텍스트 입력)
+- 이미지 갤러리 드래그 정렬
+- 이미지 업로드 진행률 (갤러리)
+- 글 버전 히스토리
 
-### bcryptjs
-- **역할**: 비밀번호 해싱/검증
-- **사용**: 환경변수의 해시와 입력 비밀번호 비교
+### 보안 강화
+- bcrypt 비밀번호 해싱 (현재: 평문 비교)
 
-## DevOps
+### 기타
+- SEO 최적화 (메타 태그, OG 이미지)
+- RSS 피드
+- 검색 기능
 
-### 주요 스크립트
-```bash
-npm run dev          # 개발 서버 (next dev)
-npm run build        # prisma generate && next build
-npm run start        # 프로덕션 서버
-npm run db:push      # 스키마를 DB에 반영
-npm run db:migrate   # 마이그레이션 생성/적용
-npm run db:studio    # Prisma Studio (DB GUI)
-npm run db:seed      # 시드 데이터
-```
+## 기술 스택 상세
 
-## SVG 아이콘 (커스텀)
+### Frontend
+- **Next.js 14** (App Router, SSR/ISR, Route Handlers, Middleware)
+- **React 18** (hooks, dynamic import, client/server 분리)
+- **TypeScript** (strict mode)
+- **Tailwind CSS 3.4** (커스텀 다크 퍼플 테마)
 
-프로젝트 전용 고양이 테마 SVG 아이콘을 직접 제작:
-- `CatFace`: 로고용 고양이 얼굴 (애니메 스타일 눈)
-- `PawPrint`: 발바닥 장식
-- `SleepingCat`: 빈 상태(empty state)용 잠자는 고양이
-- `HeroCat`: 히어로 섹션 대형 고양이
+### Editor
+- **TipTap** (ProseMirror 기반)
+  - StarterKit (codeBlock 제외)
+  - CodeBlockLowlight (lowlight + highlight.js)
+  - Underline, Link, Image, Youtube
+  - TextStyle + Color
+  - FontSize (커스텀 확장)
+  - Placeholder
+- **Mermaid** (다이어그램 렌더링, 읽기 전용)
 
-## 아티클 스타일링 (toss.tech 참고)
+### Backend
+- **Prisma ORM** (싱글턴 클라이언트, 관계형 쿼리, cascade delete)
+- **PostgreSQL (Neon)** (서버리스, connection pooler)
+- **JWT (jose)** (HS256, Edge Runtime 호환)
+- **Rate Limiter** (인메모리, IP 기반)
 
-글 상세 페이지에서 toss.tech 스타일을 참고한 읽기 경험 제공:
-- 넉넉한 줄간격 (line-height: 1.85)
-- 충분한 문단 간 여백 (margin-bottom: 24px)
-- 코드 블록: 다크 배경 + 라운드 모서리 + 모노스페이스
-- 인라인 코드: 보라색 하이라이트
-- 인용문: 좌측 보더 + 미세한 배경색
-- 리스트: 커스텀 보라색 불릿
-- 이미지: 라운드 모서리 + 그림자
-- 제목 계층: 큰 상단 마진으로 시각적 섹션 구분
-- 최대 너비 680px로 가독성 최적화
+### Storage
+- **Vercel Blob** (배포용 파일 스토리지)
+- **로컬 fs** (개발용 `public/uploads/`)
+
+### Utilities
+- clsx → `cn()` 헬퍼
+- slugify (CJK fallback)
+- date-fns (한국어 날짜 포맷)

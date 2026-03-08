@@ -4,12 +4,13 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import AdminNav from "@/components/ui/admin-nav";
 import { formatDate } from "@/lib/utils";
-import { PawPrint, SleepingCat } from "@/components/ui/cat-icon";
+import { SleepingCat } from "@/components/ui/cat-icon";
 
 interface Post {
   id: string;
   title: string;
   slug: string;
+  category: string;
   status: "DRAFT" | "PUBLISHED";
   publishedAt: string | null;
   createdAt: string;
@@ -56,10 +57,10 @@ export default function AdminPostsPage() {
         {/* Page header */}
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mb-8">
           <div>
-            <h1 className="text-2xl font-extrabold tracking-tight text-white">
+            <h1 className="text-2xl font-extrabold tracking-tight text-heading">
               게시글 관리
             </h1>
-            <p className="mt-0.5 text-sm text-gray-500">
+            <p className="mt-0.5 text-sm text-content-muted">
               총 {posts.length}개의 게시글
             </p>
           </div>
@@ -74,7 +75,7 @@ export default function AdminPostsPage() {
         {/* Search */}
         <div className="mb-6">
           <div className="relative max-w-md">
-            <svg className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <svg className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-content-muted" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
             </svg>
             <input
@@ -89,7 +90,7 @@ export default function AdminPostsPage() {
 
         {/* Table */}
         {loading ? (
-          <div className="card flex items-center justify-center py-20 text-gray-400">
+          <div className="card flex items-center justify-center py-20 text-content-3">
             <svg className="mr-2 h-5 w-5 animate-spin text-accent-purple" viewBox="0 0 24 24">
               <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
               <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
@@ -99,10 +100,10 @@ export default function AdminPostsPage() {
         ) : filtered.length === 0 ? (
           <div className="card py-16 text-center">
             <SleepingCat className="mx-auto mb-4" />
-            <p className="text-sm text-gray-400 font-medium">
+            <p className="text-sm text-content-3 font-medium">
               {search ? "검색 결과가 없어요..." : "아직 게시글이 없어요..."}
             </p>
-            <p className="text-xs text-gray-500 mt-1">
+            <p className="text-xs text-content-muted mt-1">
               {search ? "다른 키워드로 검색해 보세요." : "새 글을 작성해 보세요!"}
             </p>
           </div>
@@ -111,19 +112,22 @@ export default function AdminPostsPage() {
             <table className="min-w-full divide-y divide-surface-border">
               <thead>
                 <tr className="bg-surface-raised/50">
-                  <th className="px-5 py-3.5 text-left text-[11px] font-semibold text-gray-500 uppercase tracking-wider">
+                  <th className="px-5 py-3.5 text-left text-[11px] font-semibold text-content-muted uppercase tracking-wider">
                     제목
                   </th>
-                  <th className="px-5 py-3.5 text-left text-[11px] font-semibold text-gray-500 uppercase tracking-wider">
+                  <th className="px-5 py-3.5 text-left text-[11px] font-semibold text-content-muted uppercase tracking-wider">
                     상태
                   </th>
-                  <th className="hidden md:table-cell px-5 py-3.5 text-left text-[11px] font-semibold text-gray-500 uppercase tracking-wider">
+                  <th className="hidden md:table-cell px-5 py-3.5 text-left text-[11px] font-semibold text-content-muted uppercase tracking-wider">
+                    카테고리
+                  </th>
+                  <th className="hidden md:table-cell px-5 py-3.5 text-left text-[11px] font-semibold text-content-muted uppercase tracking-wider">
                     태그
                   </th>
-                  <th className="hidden sm:table-cell px-5 py-3.5 text-left text-[11px] font-semibold text-gray-500 uppercase tracking-wider">
+                  <th className="hidden sm:table-cell px-5 py-3.5 text-left text-[11px] font-semibold text-content-muted uppercase tracking-wider">
                     수정일
                   </th>
-                  <th className="px-5 py-3.5 text-right text-[11px] font-semibold text-gray-500 uppercase tracking-wider">
+                  <th className="px-5 py-3.5 text-right text-[11px] font-semibold text-content-muted uppercase tracking-wider">
                     작업
                   </th>
                 </tr>
@@ -134,7 +138,7 @@ export default function AdminPostsPage() {
                     <td className="px-5 py-4">
                       <Link
                         href={`/admin/posts/${post.id}/edit`}
-                        className="text-sm font-semibold text-gray-200 hover:text-accent-purple transition-colors duration-200"
+                        className="text-sm font-semibold text-content-1 hover:text-accent-purple transition-colors duration-200"
                       >
                         {post.title || "제목 없음"}
                       </Link>
@@ -151,6 +155,11 @@ export default function AdminPostsPage() {
                       </span>
                     </td>
                     <td className="hidden md:table-cell px-5 py-4">
+                      <span className="text-xs text-content-3 font-medium">
+                        {post.category || "—"}
+                      </span>
+                    </td>
+                    <td className="hidden md:table-cell px-5 py-4">
                       <div className="flex flex-wrap gap-1">
                         {post.tags.map((tag) => (
                           <span key={tag.name} className="tag">
@@ -159,7 +168,7 @@ export default function AdminPostsPage() {
                         ))}
                       </div>
                     </td>
-                    <td className="hidden sm:table-cell px-5 py-4 text-xs text-gray-500 font-mono">
+                    <td className="hidden sm:table-cell px-5 py-4 text-xs text-content-muted font-mono">
                       {formatDate(post.updatedAt)}
                     </td>
                     <td className="px-5 py-4 text-right">
@@ -185,10 +194,6 @@ export default function AdminPostsPage() {
           </div>
         )}
 
-        {/* Bottom decoration */}
-        <div className="mt-8 flex justify-center">
-          <PawPrint size={14} className="text-accent-purple/15" />
-        </div>
       </div>
     </>
   );

@@ -10,18 +10,23 @@ import { useToast } from "@/components/ui/toast";
 const TipTapEditor = dynamic(() => import("./tiptap-editor"), {
   ssr: false,
   loading: () => (
-    <div className="card p-8 text-center text-gray-300">
+    <div className="card p-8 text-center text-content-2">
       에디터 로딩 중...
     </div>
   ),
 });
 
-const PostRenderer = dynamic(
-  () => import("@/components/ui/post-renderer"),
-  { ssr: false }
-);
-
 const MAX_IMAGES = 10;
+
+const CATEGORIES = [
+  "Uncategorized",
+  "Backend",
+  "Frontend",
+  "QA",
+  "DevOps",
+  "Review",
+  "Daily",
+] as const;
 
 interface PostFormProps {
   initialData?: {
@@ -31,6 +36,7 @@ interface PostFormProps {
     contentJson: JSONContent;
     coverUrl: string | null;
     images: string[];
+    category: string;
     status: "DRAFT" | "PUBLISHED";
     tags: { name: string }[];
   };
@@ -43,17 +49,14 @@ export default function PostForm({ initialData }: PostFormProps) {
   const [excerpt, setExcerpt] = useState(initialData?.excerpt ?? "");
   const [images, setImages] = useState<string[]>(initialData?.images ?? []);
   const [coverUrl, setCoverUrl] = useState(initialData?.coverUrl ?? "");
+  const [category, setCategory] = useState(initialData?.category ?? "Uncategorized");
   const [tags, setTags] = useState(
     initialData?.tags.map((t) => t.name).join(", ") ?? ""
   );
   const [content, setContent] = useState<JSONContent>(
     initialData?.contentJson ?? { type: "doc", content: [{ type: "paragraph" }] }
   );
-  const [status, setStatus] = useState<"DRAFT" | "PUBLISHED">(
-    initialData?.status ?? "DRAFT"
-  );
   const [saving, setSaving] = useState(false);
-  const [preview, setPreview] = useState(false);
   const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -64,24 +67,24 @@ export default function PostForm({ initialData }: PostFormProps) {
   const lastSavedRef = useRef({
     title: initialData?.title ?? "",
     excerpt: initialData?.excerpt ?? "",
+    category: initialData?.category ?? "Uncategorized",
     tags: initialData?.tags.map((t) => t.name).join(", ") ?? "",
     images: initialData?.images ?? [],
     coverUrl: initialData?.coverUrl ?? "",
   });
 
-  // Mark dirty when any field changes
   useEffect(() => {
     const saved = lastSavedRef.current;
     const dirty =
       title !== saved.title ||
       excerpt !== saved.excerpt ||
+      category !== saved.category ||
       tags !== saved.tags ||
       coverUrl !== saved.coverUrl ||
       JSON.stringify(images) !== JSON.stringify(saved.images);
     setIsDirty(dirty);
-  }, [title, excerpt, tags, images, coverUrl]);
+  }, [title, excerpt, category, tags, images, coverUrl]);
 
-  // Content change also marks dirty
   const contentDirtyRef = useRef(false);
   const handleContentChange = useCallback((json: JSONContent) => {
     setContent(json);
@@ -89,7 +92,6 @@ export default function PostForm({ initialData }: PostFormProps) {
     setIsDirty(true);
   }, []);
 
-  // Unsaved changes warning
   useEffect(() => {
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
       if (isDirty || contentDirtyRef.current) {
@@ -100,23 +102,20 @@ export default function PostForm({ initialData }: PostFormProps) {
     return () => window.removeEventListener("beforeunload", handleBeforeUnload);
   }, [isDirty]);
 
-  // Mark as clean after save
   const markClean = useCallback(() => {
-    lastSavedRef.current = { title, excerpt, tags, images, coverUrl };
+    lastSavedRef.current = { title, excerpt, category, tags, images, coverUrl };
     contentDirtyRef.current = false;
     setIsDirty(false);
-  }, [title, excerpt, tags, images, coverUrl]);
+  }, [title, excerpt, category, tags, images, coverUrl]);
 
   const handleSave = useCallback(
-    async (saveStatus?: "DRAFT" | "PUBLISHED") => {
-      const targetStatus = saveStatus ?? status;
-
+    async (saveStatus: "DRAFT" | "PUBLISHED") => {
       if (!title.trim()) {
         toast("제목을 입력해주세요.", "error");
         return;
       }
 
-      if (targetStatus === "PUBLISHED") {
+      if (saveStatus === "PUBLISHED") {
         const hasContent =
           content?.content?.some(
             (node) =>
@@ -146,7 +145,8 @@ export default function PostForm({ initialData }: PostFormProps) {
           contentJson: content,
           coverUrl: finalCoverUrl,
           images,
-          status: targetStatus,
+          category,
+          status: saveStatus,
           tags: tagList,
         };
 
@@ -168,21 +168,22 @@ export default function PostForm({ initialData }: PostFormProps) {
         const data = await res.json();
         markClean();
 
-        if (!isEdit) {
+        if (saveStatus === "PUBLISHED" && data.slug) {
+          toast("글이 발행되었습니다.", "success");
+          router.push(`/blog/${data.slug}`);
+        } else if (!isEdit) {
           router.push(`/admin/posts/${data.id}/edit`);
+          toast("저장되었습니다.", "success");
+        } else {
+          toast("저장되었습니다.", "success");
         }
-
-        toast(
-          targetStatus === "PUBLISHED" ? "글이 발행되었습니다." : "초안이 저장되었습니다.",
-          "success"
-        );
       } catch {
         toast("저장에 실패했습니다.", "error");
       } finally {
         setSaving(false);
       }
     },
-    [title, excerpt, content, coverUrl, images, status, tags, isEdit, initialData, router, toast, markClean]
+    [title, excerpt, content, coverUrl, images, tags, isEdit, initialData, router, toast, markClean]
   );
 
   const handleImageUpload = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -229,6 +230,7 @@ export default function PostForm({ initialData }: PostFormProps) {
         }
         return updated;
       });
+      toast(`사진 ${newImages.length}장이 첨부되었습니다.`, "success");
     }
 
     setUploading(false);
@@ -238,7 +240,7 @@ export default function PostForm({ initialData }: PostFormProps) {
   const removeImage = useCallback((url: string) => {
     setImages((prev) => prev.filter((img) => img !== url));
     if (coverUrl === url) {
-      setCoverUrl((prev) => {
+      setCoverUrl(() => {
         const remaining = images.filter((img) => img !== url);
         return remaining[0] || "";
       });
@@ -250,41 +252,27 @@ export default function PostForm({ initialData }: PostFormProps) {
       {/* Header actions */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <span
-            className={`inline-flex items-center rounded-lg px-2.5 py-1 text-[11px] font-semibold ${
-              status === "PUBLISHED"
-                ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
-                : "bg-amber-500/10 text-amber-400 border border-amber-500/20"
-            }`}
-          >
-            {status === "PUBLISHED" ? "발행됨" : "초안"}
-          </span>
+          {isEdit && (
+            <span className="inline-flex items-center rounded-lg px-2.5 py-1 text-[11px] font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+              수정 중
+            </span>
+          )}
           {isDirty && (
-            <span className="text-xs text-gray-500">수정됨</span>
+            <span className="text-xs text-content-muted">변경사항 있음</span>
           )}
         </div>
         <div className="flex items-center gap-2">
-          <button
-            type="button"
-            onClick={() => setPreview(!preview)}
-            className="btn-ghost text-xs"
-          >
-            {preview ? "편집" : "미리보기"}
-          </button>
           <button
             type="button"
             onClick={() => handleSave("DRAFT")}
             disabled={saving}
             className="btn-secondary !py-1.5 !px-3 !text-xs !rounded-xl"
           >
-            초안 저장
+            저장
           </button>
           <button
             type="button"
-            onClick={() => {
-              setStatus("PUBLISHED");
-              handleSave("PUBLISHED");
-            }}
+            onClick={() => handleSave("PUBLISHED")}
             disabled={saving}
             className="btn-primary !py-1.5 !px-4 !text-xs !rounded-xl"
           >
@@ -293,134 +281,143 @@ export default function PostForm({ initialData }: PostFormProps) {
         </div>
       </div>
 
-      {preview ? (
-        <div className="card p-8">
-          <h1 className="text-3xl font-extrabold mb-4">{title || "제목 없음"}</h1>
-          <p className="text-gray-400 mb-6">{excerpt}</p>
-          <PostRenderer content={content} />
+      {/* Title */}
+      <input
+        type="text"
+        value={title}
+        onChange={(e) => setTitle(e.target.value)}
+        placeholder="게시글 제목을 입력하세요"
+        className="block w-full rounded-2xl border border-surface-border bg-surface px-5 py-3.5 text-xl font-bold text-heading shadow-sm placeholder:text-content-faint focus:border-accent-purple/50 focus:ring-2 focus:ring-accent-purple/20 focus:outline-none transition-all"
+      />
+
+      {/* Excerpt */}
+      <textarea
+        value={excerpt}
+        onChange={(e) => setExcerpt(e.target.value)}
+        placeholder="게시글 요약 (목록에 표시됩니다)"
+        rows={2}
+        className="input-field resize-none"
+      />
+
+      {/* Category */}
+      <div>
+        <label className="block text-sm font-semibold text-content-3 mb-1.5">
+          카테고리
+        </label>
+        <div className="flex flex-wrap gap-2">
+          {CATEGORIES.map((cat) => (
+            <button
+              key={cat}
+              type="button"
+              onClick={() => setCategory(cat)}
+              className={`rounded-xl px-3.5 py-1.5 text-xs font-semibold transition-all duration-200 border ${
+                category === cat
+                  ? "bg-accent-purple/15 text-accent-purple border-accent-purple/30"
+                  : "bg-surface-raised text-content-3 border-surface-border hover:border-surface-border-light hover:text-content-2"
+              }`}
+            >
+              {cat}
+            </button>
+          ))}
         </div>
-      ) : (
-        <>
-          {/* Title */}
-          <input
-            type="text"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            placeholder="게시글 제목을 입력하세요"
-            className="block w-full rounded-2xl border border-surface-border bg-surface px-5 py-3.5 text-xl font-bold text-white shadow-sm placeholder:text-gray-600 focus:border-accent-purple/50 focus:ring-2 focus:ring-accent-purple/20 focus:outline-none transition-all"
-          />
+      </div>
 
-          {/* Excerpt */}
-          <textarea
-            value={excerpt}
-            onChange={(e) => setExcerpt(e.target.value)}
-            placeholder="게시글 요약 (목록에 표시됩니다)"
-            rows={2}
-            className="input-field resize-none"
-          />
+      {/* Cover Image */}
+      <div>
+        <div className="flex items-center justify-between mb-2">
+          <label className="block text-sm font-semibold text-content-3">
+            대표 이미지
+          </label>
+          <span className="text-xs text-content-muted font-mono">
+            {images.length}/{MAX_IMAGES}
+          </span>
+        </div>
 
-          {/* Image Gallery */}
-          <div>
-            <div className="flex items-center justify-between mb-2">
-              <label className="block text-sm font-semibold text-gray-400">
-                이미지 갤러리
-              </label>
-              <span className="text-xs text-gray-500 font-mono">
-                {images.length}/{MAX_IMAGES}
-              </span>
-            </div>
-
-            {/* Image grid */}
-            {images.length > 0 && (
-              <div className="grid grid-cols-5 gap-2 mb-3">
-                {images.map((url) => (
-                  <div
-                    key={url}
-                    className={`relative group cursor-pointer rounded-xl overflow-hidden border-2 transition-all duration-200 ${
-                      coverUrl === url
-                        ? "border-accent-purple shadow-glow-sm"
-                        : "border-surface-border hover:border-surface-border-light"
-                    }`}
-                    onClick={() => setCoverUrl(url)}
-                  >
-                    <Image
-                      src={url}
-                      alt=""
-                      width={200}
-                      height={200}
-                      className="h-20 w-full object-cover"
-                    />
-                    {/* Cover badge */}
-                    {coverUrl === url && (
-                      <div className="absolute top-1 left-1 rounded-md bg-accent-purple px-1.5 py-0.5 text-[9px] font-bold text-dark-950">
-                        커버
-                      </div>
-                    )}
-                    {/* Delete button */}
-                    <button
-                      type="button"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        removeImage(url);
-                      }}
-                      className="absolute top-1 right-1 rounded-md bg-dark-950/80 p-0.5 text-gray-400 opacity-0 group-hover:opacity-100 hover:text-red-400 transition-all duration-200"
-                    >
-                      <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                      </svg>
-                    </button>
-                  </div>
-                ))}
-              </div>
-            )}
-
-            {/* Upload button */}
-            <div className="flex items-center gap-3">
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept="image/*"
-                multiple
-                onChange={handleImageUpload}
-                className="hidden"
-              />
-              <button
-                type="button"
-                onClick={() => fileInputRef.current?.click()}
-                disabled={uploading || images.length >= MAX_IMAGES}
-                className="btn-secondary !py-1.5 !px-3 !text-xs !rounded-xl disabled:opacity-40"
+        {images.length > 0 && (
+          <div className="grid grid-cols-5 gap-2 mb-3">
+            {images.map((url) => (
+              <div
+                key={url}
+                className={`relative group cursor-pointer rounded-xl overflow-hidden border-2 transition-all duration-200 ${
+                  coverUrl === url
+                    ? "border-accent-purple shadow-glow-sm"
+                    : "border-surface-border hover:border-surface-border-light"
+                }`}
+                onClick={() => setCoverUrl(url)}
               >
-                {uploading ? "업로드 중..." : images.length >= MAX_IMAGES ? "최대 도달" : "이미지 추가"}
-              </button>
-              {images.length > 0 && (
-                <p className="text-[11px] text-gray-500">
-                  클릭하여 커버 이미지를 선택하세요
-                </p>
-              )}
-            </div>
+                <Image
+                  src={url}
+                  alt=""
+                  width={200}
+                  height={200}
+                  className="h-20 w-full object-cover"
+                />
+                {coverUrl === url && (
+                  <div className="absolute top-1 left-1 rounded-md bg-accent-purple px-1.5 py-0.5 text-[9px] font-bold text-dark-950">
+                    커버
+                  </div>
+                )}
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    removeImage(url);
+                  }}
+                  className="absolute top-1 right-1 rounded-md bg-dark-950/80 p-0.5 text-content-3 opacity-0 group-hover:opacity-100 hover:text-red-400 transition-all duration-200"
+                >
+                  <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+            ))}
           </div>
+        )}
 
-          {/* Tags */}
-          <div>
-            <label className="block text-sm font-semibold text-gray-400 mb-1.5">
-              태그 (쉼표로 구분)
-            </label>
-            <input
-              type="text"
-              value={tags}
-              onChange={(e) => setTags(e.target.value)}
-              placeholder="React, Next.js, TypeScript"
-              className="input-field"
-            />
-          </div>
-
-          {/* Editor */}
-          <TipTapEditor
-            content={content}
-            onChange={handleContentChange}
+        <div className="flex items-center gap-3">
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            multiple
+            onChange={handleImageUpload}
+            className="hidden"
           />
-        </>
-      )}
+          <button
+            type="button"
+            onClick={() => fileInputRef.current?.click()}
+            disabled={uploading || images.length >= MAX_IMAGES}
+            className="btn-secondary !py-1.5 !px-3 !text-xs !rounded-xl disabled:opacity-40"
+          >
+            {uploading ? "업로드 중..." : images.length >= MAX_IMAGES ? "최대 도달" : "이미지 추가"}
+          </button>
+          {images.length > 0 && (
+            <p className="text-[11px] text-content-muted">
+              클릭하여 커버 이미지를 선택하세요
+            </p>
+          )}
+        </div>
+      </div>
+
+      {/* Tags */}
+      <div>
+        <label className="block text-sm font-semibold text-content-3 mb-1.5">
+          태그 (쉼표로 구분)
+        </label>
+        <input
+          type="text"
+          value={tags}
+          onChange={(e) => setTags(e.target.value)}
+          placeholder="React, Next.js, TypeScript"
+          className="input-field"
+        />
+      </div>
+
+      {/* Editor */}
+      <TipTapEditor
+        content={content}
+        onChange={handleContentChange}
+      />
     </div>
   );
 }

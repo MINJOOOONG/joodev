@@ -28,7 +28,7 @@ export async function PUT(request: NextRequest, context: Context) {
 
   try {
     const body = await request.json();
-    const { title, excerpt, contentJson, coverUrl, images, status, tags } = body;
+    const { title, excerpt, contentJson, coverUrl, images, status, tags, category } = body;
 
     const existing = await prisma.post.findUnique({ where: { id } });
     if (!existing) {
@@ -67,6 +67,7 @@ export async function PUT(request: NextRequest, context: Context) {
         contentJson: contentJson ?? existing.contentJson,
         coverUrl: coverUrl !== undefined ? coverUrl : existing.coverUrl,
         images: Array.isArray(images) ? images : existing.images,
+        category: category !== undefined ? category : existing.category,
         status: status ? (status === "PUBLISHED" ? "PUBLISHED" : "DRAFT") : existing.status,
         publishedAt,
         tags: {

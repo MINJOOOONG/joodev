@@ -22,16 +22,16 @@ export default function PostActions({ postId }: { postId: string }) {
   };
 
   return (
-    <div className="flex items-center gap-2">
+    <div className="flex items-center gap-1.5 shrink-0 ml-4">
       <Link
         href={`/admin/posts/${postId}/edit`}
-        className="rounded-xl px-3 py-1.5 text-xs font-medium text-gray-400 border border-surface-border hover:bg-surface-raised hover:text-white transition-all duration-200"
+        className="rounded-lg px-3 py-1.5 text-xs font-medium text-content-3 border border-surface-border hover:bg-surface-raised hover:text-heading transition-all duration-200"
       >
         수정
       </Link>
       <button
         onClick={handleDelete}
-        className="rounded-xl px-3 py-1.5 text-xs font-medium text-red-400/60 border border-red-400/20 hover:bg-red-400/10 hover:text-red-400 transition-all duration-200"
+        className="rounded-lg px-3 py-1.5 text-xs font-medium text-red-400/60 border border-red-400/20 hover:bg-red-400/10 hover:text-red-400 transition-all duration-200"
       >
         삭제
       </button>

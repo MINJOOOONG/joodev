@@ -4,16 +4,33 @@ import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import Underline from "@tiptap/extension-underline";
 import LinkExt from "@tiptap/extension-link";
-import Image from "@tiptap/extension-image";
+import { ResizableImage } from "./resizable-image";
 import Youtube from "@tiptap/extension-youtube";
 import TextStyle from "@tiptap/extension-text-style";
 import Color from "@tiptap/extension-color";
 import Placeholder from "@tiptap/extension-placeholder";
+import CodeBlockLowlight from "@tiptap/extension-code-block-lowlight";
+import { common, createLowlight } from "lowlight";
+import java from "highlight.js/lib/languages/java";
+import xml from "highlight.js/lib/languages/xml";
+import javascript from "highlight.js/lib/languages/javascript";
+import typescript from "highlight.js/lib/languages/typescript";
+import python from "highlight.js/lib/languages/python";
+import bash from "highlight.js/lib/languages/bash";
 import { FontSize } from "./font-size";
 import Toolbar from "./toolbar";
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useRef, useState, useEffect } from "react";
 import type { JSONContent } from "@tiptap/react";
 import { useToast } from "@/components/ui/toast";
+
+// Register languages
+const lowlight = createLowlight(common);
+lowlight.register("java", java);
+lowlight.register("html", xml);
+lowlight.register("javascript", javascript);
+lowlight.register("typescript", typescript);
+lowlight.register("python", python);
+lowlight.register("bash", bash);
 
 interface TipTapEditorProps {
   content?: JSONContent;
@@ -26,21 +43,22 @@ export default function TipTapEditor({
 }: TipTapEditorProps) {
   const { toast } = useToast();
   const [uploadProgress, setUploadProgress] = useState<number | null>(null);
+  const [htmlMode, setHtmlMode] = useState(false);
+  const [htmlSource, setHtmlSource] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
   const videoInputRef = useRef<HTMLInputElement>(null);
 
   const editor = useEditor({
     extensions: [
-      StarterKit,
+      StarterKit.configure({
+        codeBlock: false, // replaced by CodeBlockLowlight
+      }),
       Underline,
       LinkExt.configure({
         openOnClick: false,
         HTMLAttributes: { rel: "noopener noreferrer" },
       }),
-      Image.configure({
-        allowBase64: false,
-        HTMLAttributes: { class: "rounded-lg max-w-full" },
-      }),
+      ResizableImage,
       Youtube.configure({
         width: 640,
         height: 360,
@@ -51,6 +69,10 @@ export default function TipTapEditor({
       FontSize,
       Placeholder.configure({
         placeholder: "내용을 입력하세요...",
+      }),
+      CodeBlockLowlight.configure({
+        lowlight,
+        defaultLanguage: "java",
       }),
     ],
     content: content || { type: "doc", content: [{ type: "paragraph" }] },
@@ -113,7 +135,10 @@ export default function TipTapEditor({
 
       const url = await uploadFile(file);
       if (url) {
-        editor.chain().focus().setImage({ src: url, alt: file.name }).run();
+        editor.chain().focus().insertContent({
+          type: "image",
+          attrs: { src: url, alt: file.name, width: 100 },
+        }).run();
       }
       e.target.value = "";
     },
@@ -146,7 +171,10 @@ export default function TipTapEditor({
         if (file.type.startsWith("image/")) {
           const url = await uploadFile(file);
           if (url) {
-            editor.chain().focus().setImage({ src: url, alt: file.name }).run();
+            editor.chain().focus().insertContent({
+              type: "image",
+              attrs: { src: url, alt: file.name, width: 100 },
+            }).run();
           }
         } else if (file.type.startsWith("video/")) {
           const url = await uploadFile(file);
@@ -161,9 +189,34 @@ export default function TipTapEditor({
     [editor, uploadFile]
   );
 
+  // Debounced sync: HTML textarea → editor JSON → parent onChange
+  useEffect(() => {
+    if (!htmlMode || !editor) return;
+    const timer = setTimeout(() => {
+      editor.commands.setContent(htmlSource, false);
+      onChange?.(editor.getJSON());
+    }, 300);
+    return () => clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [htmlSource, htmlMode]);
+
+  const handleToggleHtmlMode = useCallback(() => {
+    if (!editor) return;
+    if (!htmlMode) {
+      // Switching TO HTML mode — get current HTML from editor
+      setHtmlSource(editor.getHTML());
+      setHtmlMode(true);
+    } else {
+      // Switching FROM HTML mode — apply HTML back to editor immediately
+      editor.commands.setContent(htmlSource, false);
+      onChange?.(editor.getJSON());
+      setHtmlMode(false);
+    }
+  }, [editor, htmlMode, htmlSource, onChange]);
+
   if (!editor) {
     return (
-      <div className="card overflow-hidden p-8 text-center text-gray-400">
+      <div className="card overflow-hidden p-8 text-center text-content-3">
         에디터 로딩 중...
       </div>
     );
@@ -175,6 +228,8 @@ export default function TipTapEditor({
         editor={editor}
         onImageUpload={handleImageUpload}
         onVideoUpload={handleVideoUpload}
+        htmlMode={htmlMode}
+        onToggleHtmlMode={handleToggleHtmlMode}
       />
 
       {uploadProgress !== null && (
@@ -195,9 +250,23 @@ export default function TipTapEditor({
         </div>
       )}
 
-      <div onDrop={handleDrop} onDragOver={(e) => e.preventDefault()}>
-        <EditorContent editor={editor} className="tiptap" />
-      </div>
+      {htmlMode ? (
+        <div className="relative">
+          <div className="absolute top-3 right-3 flex items-center gap-1.5 z-10">
+            <span className="text-[10px] font-semibold uppercase tracking-wider text-accent-orange/70 bg-accent-orange/10 px-2 py-0.5 rounded-md">HTML</span>
+          </div>
+          <textarea
+            value={htmlSource}
+            onChange={(e) => setHtmlSource(e.target.value)}
+            className="w-full min-h-[400px] p-6 pt-10 bg-dark-975 text-content-2 font-mono text-[13px] leading-[1.7] border-0 outline-none resize-y"
+            spellCheck={false}
+          />
+        </div>
+      ) : (
+        <div onDrop={handleDrop} onDragOver={(e) => e.preventDefault()}>
+          <EditorContent editor={editor} className="tiptap" />
+        </div>
+      )}
 
       <input
         ref={fileInputRef}

@@ -4,7 +4,6 @@ import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { formatDate } from "@/lib/utils";
-import { PawPrint } from "./cat-icon";
 import { useAuth } from "./auth-provider";
 
 interface BlogCardProps {
@@ -13,6 +12,7 @@ interface BlogCardProps {
   title: string;
   excerpt: string;
   coverUrl?: string | null;
+  category?: string;
   publishedAt: Date | string;
   tags: { name: string }[];
 }
@@ -23,6 +23,7 @@ export default function BlogCard({
   title,
   excerpt,
   coverUrl,
+  category,
   publishedAt,
   tags,
 }: BlogCardProps) {
@@ -57,16 +58,17 @@ export default function BlogCard({
           href={`/blog/${slug}`}
           className="flex h-36 items-center justify-center bg-gradient-to-br from-accent-purple/[0.06] via-surface to-accent-pink/[0.04] relative overflow-hidden"
         >
-          <PawPrint size={60} className="text-accent-purple/[0.06] absolute -bottom-2 -right-2 rotate-[20deg]" />
-          <PawPrint size={28} className="text-accent-pink/[0.04] absolute top-3 left-4 rotate-[-15deg]" />
           <div className="relative flex items-center gap-1 text-accent-purple/25 font-mono text-sm">
-            <span>&lt;</span>
-            <PawPrint size={16} className="text-accent-purple/15" />
-            <span>/&gt;</span>
+            <span>&lt;/&gt;</span>
           </div>
         </Link>
       )}
       <div className="flex flex-1 flex-col p-5">
+        {(category && category !== "Uncategorized") && (
+          <span className="mb-2 text-[11px] font-semibold uppercase tracking-wider text-accent-purple/70">
+            {category}
+          </span>
+        )}
         {tags.length > 0 && (
           <div className="mb-3 flex flex-wrap gap-1.5">
             {tags.map((tag) => (
@@ -76,18 +78,18 @@ export default function BlogCard({
         )}
 
         <Link href={`/blog/${slug}`}>
-          <h2 className="mb-2 text-[15px] font-bold leading-snug text-gray-100 group-hover:text-accent-purple transition-colors duration-200 line-clamp-2">
+          <h2 className="mb-2 text-[15px] font-bold leading-snug text-heading group-hover:text-accent-purple transition-colors duration-200 line-clamp-2">
             {title}
           </h2>
         </Link>
 
-        <p className="mb-4 flex-1 text-sm leading-relaxed text-gray-500 line-clamp-2">
+        <p className="mb-4 flex-1 text-sm leading-relaxed text-content-muted line-clamp-2">
           {excerpt}
         </p>
 
-        <div className="flex items-center justify-between border-t border-surface-border/40 pt-3">
+        <div className="flex items-center justify-between pt-3">
           <time
-            className="text-xs text-gray-600 font-mono"
+            className="text-xs text-content-faint font-mono"
             dateTime={new Date(publishedAt).toISOString()}
           >
             {formatDate(publishedAt)}
@@ -97,13 +99,13 @@ export default function BlogCard({
               <>
                 <Link
                   href={`/admin/posts/${id}/edit`}
-                  className="text-xs font-medium text-gray-500 hover:text-accent-purple transition-colors duration-200"
+                  className="text-xs font-medium text-content-muted hover:text-accent-purple transition-colors duration-200"
                 >
                   수정
                 </Link>
                 <button
                   onClick={handleDelete}
-                  className="text-xs font-medium text-gray-500 hover:text-red-400 transition-colors duration-200"
+                  className="text-xs font-medium text-content-muted hover:text-red-400 transition-colors duration-200"
                 >
                   삭제
                 </button>

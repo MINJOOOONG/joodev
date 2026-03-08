@@ -4,47 +4,50 @@ interface CatIconProps {
 }
 
 // White pixel-art fat cat (뚱냥이) for header logo
+// Light mode: subtle outline via CSS drop-shadow for visibility on white bg
 export function PixelCat({ className = "", size = 32 }: CatIconProps) {
   // Each cell = 1px in a 16x16 grid, scaled up
   // Pure white (#fff) fat cat with dark eyes
   const W = "#ffffff";
-  const E = "#141414"; // eye color (matches bg)
-  const P = "#ffb8d0"; // pink nose/inner ear
+  const E = "#141414"; // eye color
+  const P = "#ffb8d0"; // pink nose/inner ear/blush
   const G = "#e0e0e0"; // belly lighter shade
+  const B = "#ffe0ec"; // soft blush
+  const T = "#ffd6e8"; // tail tip pink
 
   // 16x16 pixel grid rows (top to bottom)
-  // . = empty, W = white, E = eye, P = pink, G = gray belly
+  // . = empty, W = white, E = eye, P = pink, G = gray belly, B = blush, T = tail tip
   const rows: (string | null)[][] = [
     // row 0: ear tips
     [null,null, W,  null,null,null,null,null,null,null,null,null,null, W,  null,null],
     // row 1: ears
     [null, W,   W,   W,  null,null,null,null,null,null,null,null, W,   W,   W,  null],
-    // row 2: ears + head start
+    // row 2: ears (pink inner) + head start
     [null, W,   P,   W,   W,   W,   W,   W,   W,   W,   W,   W,   W,   P,   W,  null],
     // row 3: head
     [null, W,   W,   W,   W,   W,   W,   W,   W,   W,   W,   W,   W,   W,   W,  null],
-    // row 4: eyes
+    // row 4: eyes with highlight pixel
     [null, W,   W,   W,   E,   E,   W,   W,   W,   W,   E,   E,   W,   W,   W,  null],
-    // row 5: face
-    [null, W,   W,   W,   W,   W,   W,   W,   W,   W,   W,   W,   W,   W,   W,  null],
-    // row 6: nose
-    [null, W,   W,   W,   W,   W,   W,   P,   P,   W,   W,   W,   W,   W,   W,  null],
-    // row 7: mouth
+    // row 5: cheeks (blush)
+    [null, W,   W,   B,   W,   W,   W,   W,   W,   W,   W,   W,   B,   W,   W,  null],
+    // row 6: nose + whisker dots
+    [null, W,   E,   W,   W,   W,   W,   P,   P,   W,   W,   W,   W,   E,   W,  null],
+    // row 7: mouth area
     [null, W,   W,   W,   W,   W,   W,   W,   W,   W,   W,   W,   W,   W,   W,  null],
     // row 8: body starts (FAT - wider)
     [ W,   W,   W,   W,   W,   W,   W,   W,   W,   W,   W,   W,   W,   W,   W,   W],
-    // row 9: body
+    // row 9: body with belly
     [ W,   W,   W,   W,   W,   G,   G,   G,   G,   G,   G,   W,   W,   W,   W,   W],
-    // row 10: body
+    // row 10: body with belly
     [ W,   W,   W,   W,   W,   G,   G,   G,   G,   G,   G,   W,   W,   W,   W,   W],
-    // row 11: body
+    // row 11: lower belly
     [ W,   W,   W,   W,   W,   W,   G,   G,   G,   G,   W,   W,   W,   W,   W,   W],
     // row 12: lower body
     [null, W,   W,   W,   W,   W,   W,   W,   W,   W,   W,   W,   W,   W,   W,  null],
-    // row 13: feet + tail
-    [null,null, W,   W,   W,  null,null,null,null,null,null, W,   W,   W,  null, W],
-    // row 14: feet + tail
-    [null,null, W,   W,   W,  null,null,null,null,null,null, W,   W,   W,   W,  null],
+    // row 13: feet + tail with paw pads
+    [null,null, W,   P,   W,  null,null,null,null,null,null, W,   P,   W,  null, T],
+    // row 14: feet + tail tip
+    [null,null, W,   W,   W,  null,null,null,null,null,null, W,   W,   W,   T,  null],
   ];
 
   return (
@@ -52,7 +55,7 @@ export function PixelCat({ className = "", size = 32 }: CatIconProps) {
       width={size}
       height={size}
       viewBox="0 0 16 15"
-      className={className}
+      className={`pixel-cat-light ${className}`}
       shapeRendering="crispEdges"
     >
       {rows.map((row, y) =>
@@ -101,26 +104,6 @@ export function CatFace({ className = "", size = 28 }: CatIconProps) {
       {/* Blush spots */}
       <circle cx="15" cy="39" r="4" fill="#f0abfc" opacity="0.1" />
       <circle cx="49" cy="39" r="4" fill="#f0abfc" opacity="0.1" />
-    </svg>
-  );
-}
-
-// Rounded paw print - blobby style
-export function PawPrint({ className = "", size = 22 }: CatIconProps) {
-  return (
-    <svg
-      width={size}
-      height={size}
-      viewBox="0 0 24 24"
-      fill="currentColor"
-      className={className}
-    >
-      {/* Main pad - big bean */}
-      <ellipse cx="12" cy="16.5" rx="6" ry="5" />
-      {/* Toe beans - round blobs */}
-      <circle cx="6.5" cy="9.5" r="3" />
-      <circle cx="12" cy="7" r="2.8" />
-      <circle cx="17.5" cy="9.5" r="3" />
     </svg>
   );
 }

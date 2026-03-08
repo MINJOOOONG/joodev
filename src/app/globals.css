@@ -4,21 +4,160 @@
 @tailwind components;
 @tailwind utilities;
 
+/* =============================================
+   Theme CSS Variables (Dark = default)
+   ============================================= */
+:root {
+  /* Background */
+  --color-bg: 20 20 20;
+  --color-bg-code: 17 17 17;
+  --color-bg-code-article: 13 9 25;
+
+  /* Surface */
+  --color-surface: 26 26 26;
+  --color-surface-raised: 34 34 34;
+  --color-surface-overlay: 42 42 42;
+  --color-border: 51 51 51;
+  --color-border-light: 68 68 68;
+
+  /* Text */
+  --color-heading: 255 255 255;
+  --color-text-1: 229 229 229;
+  --color-text-2: 212 212 212;
+  --color-text-3: 163 163 163;
+  --color-text-muted: 107 114 128;
+  --color-text-faint: 75 85 99;
+  --color-text-ghost: 55 65 81;
+
+  /* Accent */
+  --color-accent: 167 139 250;
+  --color-accent-pink: 240 171 252;
+  --color-accent-blue: 147 197 253;
+  --color-accent-mint: 110 231 183;
+  --color-accent-orange: 253 186 116;
+
+  /* Syntax highlighting */
+  --hljs-comment: #6b7280;
+  --hljs-keyword: #c084fc;
+  --hljs-string: #86efac;
+  --hljs-number: #fdba74;
+  --hljs-builtin: #67e8f9;
+  --hljs-function: #93c5fd;
+  --hljs-variable: #f0abfc;
+  --hljs-tag: #fca5a5;
+  --hljs-name: #f472b6;
+  --hljs-attribute: #93c5fd;
+  --hljs-meta: #a78bfa;
+  --hljs-symbol: #6ee7b7;
+  --hljs-addition-text: #86efac;
+  --hljs-addition-bg: rgba(134, 239, 172, 0.1);
+  --hljs-deletion-text: #fca5a5;
+  --hljs-deletion-bg: rgba(252, 165, 165, 0.1);
+
+  /* Shadows */
+  --shadow-glow: 0 0 25px rgba(167, 139, 250, 0.25);
+  --shadow-glow-sm: 0 0 12px rgba(167, 139, 250, 0.15);
+  --shadow-glow-lg: 0 0 40px rgba(167, 139, 250, 0.3), 0 0 80px rgba(167, 139, 250, 0.1);
+  --shadow-glow-pink: 0 0 20px rgba(240, 171, 252, 0.2);
+  --shadow-soft: 0 4px 20px rgba(0, 0, 0, 0.3);
+  --shadow-card: 0 2px 10px rgba(0, 0, 0, 0.2), 0 0 1px rgba(167, 139, 250, 0.1);
+  --shadow-card-hover: 0 8px 30px rgba(0, 0, 0, 0.3), 0 0 2px rgba(167, 139, 250, 0.15);
+  --shadow-inner: inset 0 1px 0 rgba(255, 255, 255, 0.03);
+
+  /* Scrollbar */
+  --scrollbar-thumb: rgba(167, 139, 250, 0.2);
+  --scrollbar-thumb-hover: rgba(167, 139, 250, 0.4);
+
+  /* Selection */
+  --selection-bg: rgba(167, 139, 250, 0.3);
+}
+
+[data-theme="light"] {
+  --color-bg: 250 250 252;
+  --color-bg-code: 241 243 248;
+  --color-bg-code-article: 244 246 251;
+
+  --color-surface: 255 255 255;
+  --color-surface-raised: 246 247 251;
+  --color-surface-overlay: 240 241 246;
+  --color-border: 218 220 228;
+  --color-border-light: 195 198 210;
+
+  --color-heading: 15 20 35;
+  --color-text-1: 25 30 50;
+  --color-text-2: 45 50 72;
+  --color-text-3: 80 85 105;
+  --color-text-muted: 120 125 145;
+  --color-text-faint: 175 180 195;
+  --color-text-ghost: 210 213 225;
+
+  --color-accent: 109 40 217;
+  --color-accent-pink: 190 24 93;
+  --color-accent-blue: 29 78 216;
+  --color-accent-mint: 4 120 87;
+  --color-accent-orange: 194 65 12;
+
+  --hljs-comment: #5b6070;
+  --hljs-keyword: #6d28d9;
+  --hljs-string: #047857;
+  --hljs-number: #c2410c;
+  --hljs-builtin: #0e7490;
+  --hljs-function: #1d4ed8;
+  --hljs-variable: #be185d;
+  --hljs-tag: #b91c1c;
+  --hljs-name: #be185d;
+  --hljs-attribute: #1d4ed8;
+  --hljs-meta: #6d28d9;
+  --hljs-symbol: #047857;
+  --hljs-addition-text: #047857;
+  --hljs-addition-bg: rgba(4, 120, 87, 0.1);
+  --hljs-deletion-text: #b91c1c;
+  --hljs-deletion-bg: rgba(185, 28, 28, 0.1);
+
+  --shadow-glow: 0 0 25px rgba(109, 40, 217, 0.1);
+  --shadow-glow-sm: 0 0 12px rgba(109, 40, 217, 0.06);
+  --shadow-glow-lg: 0 0 40px rgba(109, 40, 217, 0.12), 0 0 80px rgba(109, 40, 217, 0.04);
+  --shadow-glow-pink: 0 0 20px rgba(190, 24, 93, 0.1);
+  --shadow-soft: 0 4px 20px rgba(0, 0, 0, 0.07);
+  --shadow-card: 0 2px 12px rgba(0, 0, 0, 0.06), 0 0 1px rgba(109, 40, 217, 0.06);
+  --shadow-card-hover: 0 8px 30px rgba(0, 0, 0, 0.1), 0 0 2px rgba(109, 40, 217, 0.1);
+  --shadow-inner: inset 0 1px 0 rgba(0, 0, 0, 0.04);
+
+  --scrollbar-thumb: rgba(109, 40, 217, 0.18);
+  --scrollbar-thumb-hover: rgba(109, 40, 217, 0.35);
+
+  --selection-bg: rgba(109, 40, 217, 0.2);
+}
+
 @layer base {
   html {
     scroll-behavior: smooth;
   }
 
   body {
-    @apply bg-dark-950 text-gray-200 antialiased font-sans;
+    background-color: rgb(var(--color-bg));
+    color: rgb(var(--color-text-1));
+    @apply antialiased font-sans;
   }
 
-  * {
-    font-family: var(--font-galmuri), system-ui, sans-serif;
+  /* Apply Mona12 to body and form elements only (NOT *) */
+  body, button, input, select, textarea {
+    font-family: var(--font-mona12), system-ui, sans-serif;
+  }
+
+  /* Force monospace on code blocks and ALL children (including hljs spans) */
+  code, pre, kbd, .font-mono,
+  code *, pre *, kbd *,
+  .hljs, .hljs *,
+  [class*="hljs-"] {
+    font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace !important;
+    font-variant-ligatures: none !important;
+    letter-spacing: 0 !important;
   }
 
   ::selection {
-    @apply bg-accent-purple/30 text-white;
+    background: var(--selection-bg);
+    color: rgb(var(--color-heading));
   }
 
   /* Custom scrollbar */
@@ -29,11 +168,11 @@
     background: transparent;
   }
   ::-webkit-scrollbar-thumb {
-    background: rgba(167, 139, 250, 0.2);
+    background: var(--scrollbar-thumb);
     border-radius: 3px;
   }
   ::-webkit-scrollbar-thumb:hover {
-    background: rgba(167, 139, 250, 0.4);
+    background: var(--scrollbar-thumb-hover);
   }
 }
 
@@ -43,15 +182,19 @@
   }
 
   .btn-secondary {
-    @apply inline-flex items-center justify-center gap-2 rounded-xl border border-surface-border bg-surface-raised px-5 py-2.5 text-sm font-semibold text-gray-300 transition-all duration-200 hover:bg-surface-overlay hover:border-surface-border-light hover:text-white active:scale-[0.97];
+    @apply inline-flex items-center justify-center gap-2 rounded-xl border border-surface-border bg-surface-raised px-5 py-2.5 text-sm font-semibold text-content-2 transition-all duration-200 hover:bg-surface-overlay hover:border-surface-border-light hover:text-heading active:scale-[0.97];
   }
 
   .btn-ghost {
-    @apply inline-flex items-center justify-center gap-2 rounded-xl px-3 py-2 text-sm font-medium text-gray-400 transition-all duration-200 hover:bg-surface-raised hover:text-gray-200;
+    @apply inline-flex items-center justify-center gap-2 rounded-xl px-3 py-2 text-sm font-medium text-content-3 transition-all duration-200 hover:bg-surface-raised hover:text-content-1;
+  }
+
+  .btn-outline {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl border border-accent-purple/30 bg-accent-purple/[0.06] px-5 py-2.5 text-sm font-semibold text-accent-purple transition-all duration-200 hover:bg-accent-purple/15 hover:border-accent-purple/50 hover:shadow-glow-sm active:scale-[0.97];
   }
 
   .card {
-    @apply rounded-2xl border border-surface-border bg-surface text-gray-200 shadow-card transition-all duration-300;
+    @apply rounded-2xl border border-surface-border bg-surface text-content-1 shadow-card transition-all duration-300;
   }
 
   .card-raised {
@@ -59,7 +202,7 @@
   }
 
   .input-field {
-    @apply block w-full rounded-xl border border-surface-border bg-surface px-4 py-2.5 text-sm text-gray-200 shadow-sm placeholder:text-gray-500 focus:border-accent-purple/50 focus:ring-2 focus:ring-accent-purple/20 focus:outline-none transition-all duration-200;
+    @apply block w-full rounded-xl border border-surface-border bg-surface px-4 py-2.5 text-sm text-content-1 shadow-sm placeholder:text-content-muted focus:border-accent-purple/50 focus:ring-2 focus:ring-accent-purple/20 focus:outline-none transition-all duration-200;
   }
 
   .tag {
@@ -71,7 +214,7 @@
    TipTap Editor Styles (Writing Mode)
    ============================================= */
 .tiptap {
-  @apply outline-none min-h-[400px] p-6 text-gray-200 leading-relaxed;
+  @apply outline-none min-h-[400px] p-6 text-content-1 leading-relaxed;
 }
 
 .tiptap p {
@@ -79,15 +222,15 @@
 }
 
 .tiptap h1 {
-  @apply text-[28px] font-bold mt-12 mb-4 text-white leading-tight;
+  @apply text-[28px] font-bold mt-12 mb-4 text-heading leading-tight;
 }
 
 .tiptap h2 {
-  @apply text-[22px] font-bold mt-10 mb-3 text-white leading-tight;
+  @apply text-[22px] font-bold mt-10 mb-3 text-heading leading-tight;
 }
 
 .tiptap h3 {
-  @apply text-lg font-bold mt-8 mb-2 text-white leading-snug;
+  @apply text-lg font-bold mt-8 mb-2 text-heading leading-snug;
 }
 
 .tiptap ul {
@@ -111,7 +254,7 @@
 }
 
 .tiptap blockquote {
-  @apply border-l-[3px] border-accent-purple/40 bg-accent-purple/[0.04] rounded-r-xl pl-5 pr-4 py-4 my-6 text-gray-400 not-italic;
+  @apply border-l-[3px] border-accent-purple/40 bg-accent-purple/[0.04] rounded-r-xl pl-5 pr-4 py-4 my-6 text-content-3 not-italic;
 }
 
 .tiptap blockquote p {
@@ -119,7 +262,12 @@
 }
 
 .tiptap pre {
-  @apply bg-dark-975 text-gray-300 rounded-xl p-5 my-6 overflow-x-auto font-mono text-[13px] leading-[1.7] border border-surface-border;
+  @apply bg-dark-975 text-content-2 rounded-xl p-5 pt-9 my-6 overflow-x-auto font-mono text-[13px] leading-[1.7] border border-surface-border relative;
+}
+
+.tiptap pre::before {
+  content: attr(data-language);
+  @apply absolute top-0 left-0 px-3 py-1 text-[10px] font-semibold uppercase tracking-wider text-accent-purple/60 bg-accent-purple/5 rounded-tl-xl rounded-br-lg;
 }
 
 .tiptap code {
@@ -127,7 +275,7 @@
 }
 
 .tiptap pre code {
-  @apply bg-transparent text-gray-300 p-0 text-[13px];
+  @apply bg-transparent text-content-2 p-0 text-[13px];
 }
 
 .tiptap hr {
@@ -143,7 +291,7 @@
 }
 
 .tiptap p.is-editor-empty:first-child::before {
-  @apply text-gray-600 float-left h-0 pointer-events-none;
+  @apply text-content-faint float-left h-0 pointer-events-none;
   content: attr(data-placeholder);
 }
 
@@ -151,7 +299,7 @@
    Article Renderer Styles (toss.tech inspired)
    ============================================= */
 .article-content {
-  @apply text-gray-300 leading-[1.8];
+  @apply text-content-2 leading-[1.8];
 }
 
 .article-content p {
@@ -159,15 +307,15 @@
 }
 
 .article-content h1 {
-  @apply text-[28px] font-bold mt-14 mb-5 text-white leading-tight tracking-tight;
+  @apply text-[28px] font-bold mt-14 mb-5 text-heading leading-tight tracking-tight;
 }
 
 .article-content h2 {
-  @apply text-[22px] font-bold mt-12 mb-4 text-white leading-tight tracking-tight;
+  @apply text-[22px] font-bold mt-12 mb-4 text-heading leading-tight tracking-tight;
 }
 
 .article-content h3 {
-  @apply text-lg font-bold mt-10 mb-3 text-white leading-snug;
+  @apply text-lg font-bold mt-10 mb-3 text-heading leading-snug;
 }
 
 .article-content ul {
@@ -180,7 +328,7 @@
 }
 
 .article-content ul > li::before {
-  content: "•";
+  content: "\2022";
   @apply absolute -left-5 text-accent-purple/60;
 }
 
@@ -201,7 +349,7 @@
 }
 
 .article-content blockquote {
-  @apply border-l-[3px] border-accent-purple/40 bg-accent-purple/[0.04] rounded-r-xl pl-5 pr-4 py-4 my-8 text-gray-400;
+  @apply border-l-[3px] border-accent-purple/40 bg-accent-purple/[0.04] rounded-r-xl pl-5 pr-4 py-4 my-8 text-content-3;
 }
 
 .article-content blockquote p {
@@ -209,7 +357,13 @@
 }
 
 .article-content pre {
-  @apply bg-[#0d0919] text-gray-300 rounded-2xl p-6 my-8 overflow-x-auto font-mono text-[13.5px] leading-[1.75] border border-surface-border/80;
+  background-color: rgb(var(--color-bg-code-article));
+  @apply text-content-2 rounded-2xl p-6 pt-10 my-8 overflow-x-auto font-mono text-[13.5px] leading-[1.75] border border-surface-border/80 relative;
+}
+
+.article-content pre::before {
+  content: attr(data-language);
+  @apply absolute top-0 left-0 px-3 py-1 text-[10px] font-semibold uppercase tracking-wider text-accent-purple/60 bg-accent-purple/5 rounded-tl-2xl rounded-br-lg;
 }
 
 .article-content code {
@@ -217,7 +371,7 @@
 }
 
 .article-content pre code {
-  @apply bg-transparent text-gray-300 p-0 text-[13.5px] font-normal;
+  @apply bg-transparent text-content-2 p-0 text-[13.5px] font-normal;
 }
 
 .article-content hr {
@@ -230,6 +384,85 @@
 
 .article-content div[data-youtube-video] iframe {
   @apply w-full aspect-video rounded-2xl;
+}
+
+/* =============================================
+   Syntax Highlighting (CSS variable-based)
+   ============================================= */
+.hljs-comment,
+.hljs-quote {
+  color: var(--hljs-comment);
+  font-style: italic;
+}
+
+.hljs-keyword,
+.hljs-selector-tag {
+  color: var(--hljs-keyword);
+}
+
+.hljs-string,
+.hljs-attr {
+  color: var(--hljs-string);
+}
+
+.hljs-number,
+.hljs-literal {
+  color: var(--hljs-number);
+}
+
+.hljs-built_in,
+.hljs-type,
+.hljs-class .hljs-title {
+  color: var(--hljs-builtin);
+}
+
+.hljs-function .hljs-title,
+.hljs-title.function_ {
+  color: var(--hljs-function);
+}
+
+.hljs-variable,
+.hljs-template-variable {
+  color: var(--hljs-variable);
+}
+
+.hljs-tag {
+  color: var(--hljs-tag);
+}
+
+.hljs-name,
+.hljs-selector-id,
+.hljs-selector-class {
+  color: var(--hljs-name);
+}
+
+.hljs-attribute {
+  color: var(--hljs-attribute);
+}
+
+.hljs-meta {
+  color: var(--hljs-meta);
+}
+
+.hljs-symbol,
+.hljs-bullet {
+  color: var(--hljs-symbol);
+}
+
+.hljs-addition {
+  color: var(--hljs-addition-text);
+  background: var(--hljs-addition-bg);
+}
+
+.hljs-deletion {
+  color: var(--hljs-deletion-text);
+  background: var(--hljs-deletion-bg);
+}
+
+/* Gradient text shimmer */
+@keyframes gradientShift {
+  0%, 100% { background-position: 0% center; }
+  50% { background-position: 100% center; }
 }
 
 /* Smooth fade-in animation */
@@ -248,37 +481,44 @@
   animation: fadeInUp 0.5s ease-out;
 }
 
-/* =============================================
-   Paw Snow - falling paw prints animation
-   ============================================= */
-.paw-snow-container {
-  position: fixed;
-  inset: 0;
-  pointer-events: none;
-  z-index: 0;
-  overflow: hidden;
+/* Paw falling animation */
+@keyframes pawFall {
+  0% {
+    transform: translateY(-5vh) translateX(0);
+    opacity: 0;
+  }
+  5% {
+    opacity: 1;
+  }
+  95% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(105vh) translateX(var(--paw-sway, 30px));
+    opacity: 0;
+  }
 }
 
-.paw-snow-flake {
-  position: absolute;
-  top: -30px;
+.paw-falling {
   animation: pawFall linear infinite;
   will-change: transform;
 }
 
-@keyframes pawFall {
-  0% {
-    transform: translateY(-30px) translateX(0) rotate(0deg);
-    opacity: 0;
-  }
-  10% {
-    opacity: 1;
-  }
-  90% {
-    opacity: 1;
-  }
-  100% {
-    transform: translateY(calc(100vh + 30px)) translateX(40px) rotate(45deg);
-    opacity: 0;
-  }
+/* Paw pad colors per theme */
+.paw-pad-icon {
+  fill: rgba(167, 139, 250, 0.85);
+  filter: drop-shadow(0 0 2px rgba(167, 139, 250, 0.3));
+}
+
+[data-theme="light"] .paw-pad-icon {
+  fill: rgba(124, 58, 237, 0.55);
+  filter: drop-shadow(0 0 2px rgba(124, 58, 237, 0.2));
+}
+
+/* PixelCat light mode visibility - subtle pixel-art outline */
+[data-theme="light"] .pixel-cat-light {
+  filter: drop-shadow(1px 0 0 rgba(0, 0, 0, 0.15))
+          drop-shadow(-1px 0 0 rgba(0, 0, 0, 0.15))
+          drop-shadow(0 1px 0 rgba(0, 0, 0, 0.15))
+          drop-shadow(0 -1px 0 rgba(0, 0, 0, 0.15));
 }
