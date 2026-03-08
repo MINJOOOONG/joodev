@@ -15,7 +15,7 @@
   },
   "dependencies": {
     "@prisma/client": "^5.20.0",
-    "@tiptap/extension-code-block-lowlight": "^3.20.0",
+    "@tiptap/extension-code-block-lowlight": "^2.27.2",
     "@tiptap/extension-color": "^2.6.0",
     "@tiptap/extension-image": "^2.6.0",
     "@tiptap/extension-link": "^2.6.0",
