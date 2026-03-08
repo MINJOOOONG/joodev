@@ -8,12 +8,14 @@ import { PixelCat } from "./cat-icon";
 import { useAuth } from "./auth-provider";
 import { useTheme } from "./theme-provider";
 import { useMeow } from "@/hooks/use-meow";
+import { useMusic } from "@/hooks/use-music";
 
 export default function Header() {
   const pathname = usePathname();
   const { isAuthenticated, isLoading, login, logout } = useAuth();
   const { theme, toggleTheme } = useTheme();
   const meow = useMeow();
+  const { playing, toggle: toggleMusic } = useMusic();
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [password, setPassword] = useState("");
   const [loginError, setLoginError] = useState("");
@@ -42,9 +44,19 @@ export default function Header() {
             <Link href="/" className="group flex items-center gap-2.5">
               <div
                 className="relative flex items-center justify-center transition-all duration-300 group-hover:scale-110 cursor-pointer"
-                onClick={(e) => { e.preventDefault(); meow(); }}
+                onClick={(e) => { e.preventDefault(); toggleMusic(); meow(); }}
               >
                 <PixelCat size={36} />
+                {/* 음악 상태 말풍선 */}
+                <span
+                  className={`pointer-events-none absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full text-[8px] leading-none transition-all duration-300 ${
+                    playing
+                      ? "bg-accent-purple/20 text-accent-purple scale-100 opacity-100"
+                      : "bg-surface-raised/60 text-content-muted scale-90 opacity-70"
+                  }`}
+                >
+                  {playing ? "♪" : "⏸"}
+                </span>
               </div>
               <span className="text-lg font-extrabold tracking-tight text-heading">
                 Joo<span className="text-accent-purple">Dev</span>
