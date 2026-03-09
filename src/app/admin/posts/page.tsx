@@ -181,7 +181,7 @@ export default function AdminPostsPage() {
                         </Link>
                         <button
                           onClick={() => handleDelete(post.id, post.title)}
-                          className="rounded-lg px-2.5 py-1.5 text-xs font-semibold text-red-400/70 hover:bg-red-500/10 hover:text-red-400 transition-colors duration-200"
+                          className="btn-danger"
                         >
                           삭제
                         </button>

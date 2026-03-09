@@ -16,7 +16,7 @@ export default function NotFound() {
         <p className="mt-2 text-sm text-content-muted">
           요청하신 페이지가 존재하지 않거나 이동되었습니다.
         </p>
-        <Link href="/" className="btn-primary mt-8">
+        <Link href="/home" className="btn-primary mt-8">
           홈으로 돌아가기
         </Link>
       </div>

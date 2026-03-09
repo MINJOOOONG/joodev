@@ -178,19 +178,23 @@
 
 @layer components {
   .btn-primary {
-    @apply inline-flex items-center justify-center gap-2 rounded-xl bg-accent-purple px-5 py-2.5 text-sm font-semibold text-dark-950 shadow-glow-sm transition-all duration-200 hover:bg-accent-pink hover:shadow-glow active:scale-[0.97];
+    @apply inline-flex items-center justify-center gap-2 rounded-lg bg-accent-purple px-5 py-2.5 text-sm font-semibold text-white transition-all duration-200 hover:brightness-110 active:scale-[0.97] disabled:opacity-40 disabled:pointer-events-none;
   }
 
   .btn-secondary {
-    @apply inline-flex items-center justify-center gap-2 rounded-xl border border-surface-border bg-surface-raised px-5 py-2.5 text-sm font-semibold text-content-2 transition-all duration-200 hover:bg-surface-overlay hover:border-surface-border-light hover:text-heading active:scale-[0.97];
+    @apply inline-flex items-center justify-center gap-2 rounded-lg border border-surface-border bg-surface px-5 py-2.5 text-sm font-semibold text-content-2 transition-all duration-200 hover:bg-surface-raised hover:border-surface-border-light hover:text-heading active:scale-[0.97] disabled:opacity-40 disabled:pointer-events-none;
   }
 
   .btn-ghost {
-    @apply inline-flex items-center justify-center gap-2 rounded-xl px-3 py-2 text-sm font-medium text-content-3 transition-all duration-200 hover:bg-surface-raised hover:text-content-1;
+    @apply inline-flex items-center justify-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-content-3 transition-all duration-200 hover:bg-surface-raised hover:text-content-1 disabled:opacity-40 disabled:pointer-events-none;
   }
 
   .btn-outline {
-    @apply inline-flex items-center justify-center gap-2 rounded-xl border border-accent-purple/30 bg-accent-purple/[0.06] px-5 py-2.5 text-sm font-semibold text-accent-purple transition-all duration-200 hover:bg-accent-purple/15 hover:border-accent-purple/50 hover:shadow-glow-sm active:scale-[0.97];
+    @apply inline-flex items-center justify-center gap-2 rounded-lg border border-accent-purple/30 bg-accent-purple/[0.06] px-5 py-2.5 text-sm font-semibold text-accent-purple transition-all duration-200 hover:bg-accent-purple/15 hover:border-accent-purple/50 active:scale-[0.97] disabled:opacity-40 disabled:pointer-events-none;
+  }
+
+  .btn-danger {
+    @apply inline-flex items-center justify-center gap-2 rounded-lg px-3 py-1.5 text-xs font-medium text-red-400/70 transition-all duration-200 hover:bg-red-500/10 hover:text-red-400 disabled:opacity-40 disabled:pointer-events-none;
   }
 
   .card {
@@ -513,6 +517,69 @@
 [data-theme="light"] .paw-pad-icon {
   fill: rgba(124, 58, 237, 0.55);
   filter: drop-shadow(0 0 2px rgba(124, 58, 237, 0.2));
+}
+
+/* ─── Intro page: speech bubble & text shimmer ─── */
+@keyframes introShimmer {
+  0% { background-position: -200% center; }
+  100% { background-position: 200% center; }
+}
+
+@keyframes introBubbleGlow {
+  0%, 100% { box-shadow: 0 0 12px rgba(167, 139, 250, 0.06), 0 0 0 1px rgba(167, 139, 250, 0.08); }
+  50% { box-shadow: 0 0 20px rgba(167, 139, 250, 0.12), 0 0 0 1px rgba(167, 139, 250, 0.15); }
+}
+
+.intro-bubble {
+  animation: introBubbleGlow 3s ease-in-out infinite;
+}
+
+.intro-text {
+  background: linear-gradient(
+    90deg,
+    rgb(var(--color-heading)) 0%,
+    rgb(var(--color-accent)) 25%,
+    rgb(var(--color-accent-pink, 240 171 252)) 50%,
+    rgb(var(--color-accent)) 75%,
+    rgb(var(--color-heading)) 100%
+  );
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: introShimmer 4s linear infinite;
+}
+
+.intro-bubble:hover .intro-text {
+  animation-duration: 2s;
+}
+
+/* Gentle float for intro cat */
+@keyframes floatSlow {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+
+.animate-float-slow {
+  animation: floatSlow 3s ease-in-out infinite;
+}
+
+/* Intro sparkle: 은은한 반짝임 */
+@keyframes introSparkle {
+  0%, 100% { opacity: 0.15; }
+  50% { opacity: 0.6; }
+}
+
+.intro-sparkle {
+  animation: introSparkle 2.5s ease-in-out infinite;
+}
+
+.intro-sparkle-slow {
+  animation: introSparkle 4s ease-in-out infinite;
+}
+
+.intro-sparkle-fast {
+  animation: introSparkle 1.8s ease-in-out infinite;
 }
 
 /* PixelCat light mode visibility - subtle pixel-art outline */

@@ -302,7 +302,7 @@ export default function Toolbar({ editor, onImageUpload, onVideoUpload, htmlMode
               value={linkUrl}
               onChange={(e) => setLinkUrl(e.target.value)}
               placeholder="https://..."
-              className="input-field mb-2 !text-xs"
+              className="input-field mb-2 text-xs"
               onKeyDown={(e) => e.key === "Enter" && setLink()}
               autoFocus
             />
@@ -321,7 +321,7 @@ export default function Toolbar({ editor, onImageUpload, onVideoUpload, htmlMode
                   e.preventDefault();
                   setLink();
                 }}
-                className="btn-primary !py-1 !px-2.5 !text-xs !rounded-lg"
+                className="btn-primary py-1 px-2.5 text-xs"
               >
                 적용
               </button>
@@ -331,7 +331,7 @@ export default function Toolbar({ editor, onImageUpload, onVideoUpload, htmlMode
                   editor.chain().focus().unsetLink().run();
                   setShowLink(false);
                 }}
-                className="btn-ghost !py-1 !px-2 !text-xs"
+                className="btn-ghost py-1 px-2 text-xs"
               >
                 제거
               </button>
@@ -429,13 +429,13 @@ export default function Toolbar({ editor, onImageUpload, onVideoUpload, htmlMode
               value={youtubeUrl}
               onChange={(e) => setYoutubeUrl(e.target.value)}
               placeholder="YouTube URL 입력..."
-              className="input-field mb-2 !text-xs"
+              className="input-field mb-2 text-xs"
               onKeyDown={(e) => e.key === "Enter" && addYouTube()}
               autoFocus
             />
             <button
               onClick={addYouTube}
-              className="rounded-lg bg-red-500/80 px-2.5 py-1 text-xs text-white hover:bg-red-500 transition-colors"
+              className="btn-primary py-1 px-2.5 text-xs"
             >
               임베드
             </button>

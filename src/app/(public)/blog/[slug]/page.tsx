@@ -124,7 +124,7 @@ export default async function PostDetailPage({ params }: Props) {
         {/* Bottom nav */}
         <div className="mt-16 pt-8 text-center">
           <p className="text-sm text-content-muted mb-5">읽어주셔서 감사합니다!</p>
-          <Link href="/blog" className="btn-secondary text-xs">
+          <Link href="/blog" className="btn-secondary px-4 py-2 text-xs">
             다른 글 보기
           </Link>
         </div>

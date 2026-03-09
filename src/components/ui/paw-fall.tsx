@@ -32,14 +32,16 @@ export default function PawFall() {
   const [paws, setPaws] = useState<Paw[]>([]);
 
   useEffect(() => {
-    const generated: Paw[] = Array.from({ length: 12 }, (_, i) => ({
+    // 화면 전체에 고르게 분포 — 좌우 끝까지 포함
+    const positions = [2, 10, 18, 28, 37, 48, 58, 67, 76, 85, 93, 98];
+    const generated: Paw[] = positions.map((x, i) => ({
       id: i,
-      x: Math.random() * 100,
-      size: 12 + Math.random() * 24,         // 12~36px — wide range for variety
+      x: x + (Math.random() * 4 - 2),       // 약간의 랜덤 오프셋
+      size: 12 + Math.random() * 24,          // 12~36px
       opacity: 0.2 + Math.random() * 0.2,
-      duration: 10 + Math.random() * 14,      // 10~24s — noticeably faster
-      delay: Math.random() * 18,
-      sway: 15 + Math.random() * 50,
+      duration: 10 + Math.random() * 14,      // 10~24s
+      delay: Math.random() * 4,               // 0~4s — 바로 시작
+      sway: 10 + Math.random() * 30,
       rotation: Math.random() * 360,
     }));
     setPaws(generated);

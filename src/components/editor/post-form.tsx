@@ -211,14 +211,19 @@ export default function PostForm({ initialData }: PostFormProps) {
 
       try {
         const res = await fetch("/api/upload", { method: "POST", body: formData });
-        const data = await res.json();
         if (res.ok) {
+          const data = await res.json();
           newImages.push(data.url);
         } else {
-          toast("이미지 업로드에 실패했습니다.", "error");
+          let errorMsg = `업로드 실패 (${res.status})`;
+          try {
+            const data = await res.json();
+            errorMsg = data.error || errorMsg;
+          } catch {}
+          toast(errorMsg, "error");
         }
-      } catch {
-        toast("이미지 업로드에 실패했습니다.", "error");
+      } catch (err) {
+        toast(`네트워크 오류: ${err instanceof Error ? err.message : "알 수 없는 오류"}`, "error");
       }
     }
 
@@ -266,7 +271,7 @@ export default function PostForm({ initialData }: PostFormProps) {
             type="button"
             onClick={() => handleSave("DRAFT")}
             disabled={saving}
-            className="btn-secondary !py-1.5 !px-3 !text-xs !rounded-xl"
+            className="btn-secondary px-3 py-1.5 text-xs"
           >
             저장
           </button>
@@ -274,7 +279,7 @@ export default function PostForm({ initialData }: PostFormProps) {
             type="button"
             onClick={() => handleSave("PUBLISHED")}
             disabled={saving}
-            className="btn-primary !py-1.5 !px-4 !text-xs !rounded-xl"
+            className="btn-primary px-4 py-1.5 text-xs"
           >
             {saving ? "저장 중..." : "발행"}
           </button>
@@ -387,7 +392,7 @@ export default function PostForm({ initialData }: PostFormProps) {
             type="button"
             onClick={() => fileInputRef.current?.click()}
             disabled={uploading || images.length >= MAX_IMAGES}
-            className="btn-secondary !py-1.5 !px-3 !text-xs !rounded-xl disabled:opacity-40"
+            className="btn-secondary px-3 py-1.5 text-xs"
           >
             {uploading ? "업로드 중..." : images.length >= MAX_IMAGES ? "최대 도달" : "이미지 추가"}
           </button>

@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/db";
 import { generateSlug } from "@/lib/utils";
 
@@ -92,7 +93,15 @@ export async function DELETE(_request: NextRequest, context: Context) {
   const { id } = await context.params;
 
   try {
+    const post = await prisma.post.findUnique({ where: { id }, select: { slug: true } });
     await prisma.post.delete({ where: { id } });
+
+    // ISR 캐시 무효화: 목록 + 삭제된 글 상세 페이지
+    revalidatePath("/blog");
+    if (post?.slug) {
+      revalidatePath(`/blog/${post.slug}`);
+    }
+
     return NextResponse.json({ success: true });
   } catch {
     return NextResponse.json(

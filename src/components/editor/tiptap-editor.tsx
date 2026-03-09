@@ -101,17 +101,23 @@ export default function TipTapEditor({
               const data = JSON.parse(xhr.responseText);
               resolve(data.url);
             } else {
-              reject(new Error("Upload failed"));
+              try {
+                const data = JSON.parse(xhr.responseText);
+                reject(new Error(data.error || `업로드 실패 (${xhr.status})`));
+              } catch {
+                reject(new Error(`업로드 실패 (${xhr.status})`));
+              }
             }
           });
-          xhr.addEventListener("error", () => reject(new Error("Upload failed")));
+          xhr.addEventListener("error", () => reject(new Error("네트워크 오류가 발생했습니다.")));
+          xhr.addEventListener("abort", () => reject(new Error("업로드가 취소되었습니다.")));
           xhr.open("POST", "/api/upload");
           xhr.send(formData);
         });
         return url;
       } catch (err) {
         console.error("Upload error:", err);
-        toast("파일 업로드에 실패했습니다.", "error");
+        toast(err instanceof Error ? err.message : "파일 업로드에 실패했습니다.", "error");
         return null;
       } finally {
         setUploadProgress(null);

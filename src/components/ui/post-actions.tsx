@@ -15,7 +15,8 @@ export default function PostActions({ postId }: { postId: string }) {
 
     const res = await fetch(`/api/posts/${postId}`, { method: "DELETE" });
     if (res.ok) {
-      router.push("/blog");
+      router.replace("/blog");
+      router.refresh();
     } else {
       alert("삭제에 실패했습니다.");
     }
@@ -25,13 +26,13 @@ export default function PostActions({ postId }: { postId: string }) {
     <div className="flex items-center gap-1.5 shrink-0 ml-4">
       <Link
         href={`/admin/posts/${postId}/edit`}
-        className="rounded-lg px-3 py-1.5 text-xs font-medium text-content-3 border border-surface-border hover:bg-surface-raised hover:text-heading transition-all duration-200"
+        className="btn-ghost py-1.5 px-3 text-xs"
       >
         수정
       </Link>
       <button
         onClick={handleDelete}
-        className="rounded-lg px-3 py-1.5 text-xs font-medium text-red-400/60 border border-red-400/20 hover:bg-red-400/10 hover:text-red-400 transition-all duration-200"
+        className="btn-danger"
       >
         삭제
       </button>

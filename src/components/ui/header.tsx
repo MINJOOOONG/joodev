@@ -41,7 +41,7 @@ export default function Header() {
       <header className="sticky top-0 z-40 bg-[rgb(var(--color-bg)/0.85)] backdrop-blur-xl">
         <div className="mx-auto max-w-5xl px-4 sm:px-6">
           <div className="flex h-16 items-center justify-between">
-            <Link href="/" className="group flex items-center gap-2.5">
+            <Link href="/home" className="group flex items-center gap-2.5">
               <div
                 className="relative flex items-center justify-center transition-all duration-300 group-hover:scale-110 cursor-pointer"
                 onClick={(e) => { e.preventDefault(); toggleMusic(); meow(); }}
@@ -65,10 +65,10 @@ export default function Header() {
             <nav className="flex items-center gap-0.5">
               {/* Nav tabs */}
               <Link
-                href="/"
+                href="/home"
                 className={cn(
                   "rounded-lg px-3 py-1.5 text-[13px] font-semibold transition-all duration-200",
-                  pathname === "/"
+                  pathname === "/home"
                     ? "bg-accent-purple/10 text-accent-purple"
                     : "text-content-3 hover:bg-surface-raised/80 hover:text-content-1"
                 )}

@@ -25,6 +25,7 @@ const ResizableImageRenderer = Image.extend({
 import Youtube from "@tiptap/extension-youtube";
 import TextStyle from "@tiptap/extension-text-style";
 import Color from "@tiptap/extension-color";
+import { FontSize } from "@/components/editor/font-size";
 import CodeBlockLowlight from "@tiptap/extension-code-block-lowlight";
 import { common, createLowlight } from "lowlight";
 import java from "highlight.js/lib/languages/java";
@@ -210,6 +211,7 @@ export default function PostRenderer({ content }: PostRendererProps) {
       Youtube.configure({ width: 640, height: 360 }),
       TextStyle,
       Color,
+      FontSize,
       CodeBlockLowlight.configure({ lowlight }),
     ],
     content: modifiedContent,
