@@ -14,6 +14,11 @@ interface ToolbarProps {
 }
 
 const FONT_SIZES = [12, 14, 16, 18, 20, 24, 28, 32];
+const LINE_HEIGHTS = [
+  { value: "1.4", label: "좁게" },
+  { value: "1.8", label: "기본" },
+  { value: "2.2", label: "넓게" },
+];
 const COLORS = [
   "#e2e8f0", "#a78bfa", "#f0abfc", "#93c5fd", "#6ee7b7",
   "#fdba74", "#fca5a5", "#fbbf24", "#f472b6", "#67e8f9",
@@ -51,6 +56,7 @@ export default function Toolbar({ editor, onImageUpload, onVideoUpload, htmlMode
   const [linkUrl, setLinkUrl] = useState("");
   const [linkNewTab, setLinkNewTab] = useState(true);
   const [showCodeLang, setShowCodeLang] = useState(false);
+  const [showLineHeight, setShowLineHeight] = useState(false);
 
   const closeAllDropdowns = useCallback(() => {
     setShowFontSize(false);
@@ -58,6 +64,7 @@ export default function Toolbar({ editor, onImageUpload, onVideoUpload, htmlMode
     setShowYouTube(false);
     setShowLink(false);
     setShowCodeLang(false);
+    setShowLineHeight(false);
   }, []);
 
   const setFontSize = useCallback(
@@ -152,7 +159,7 @@ export default function Toolbar({ editor, onImageUpload, onVideoUpload, htmlMode
   );
 
   return (
-    <div className="flex flex-wrap items-center gap-0.5 border-b border-surface-border bg-surface-raised/50 p-2.5 rounded-t-2xl">
+    <div className="sticky top-[57px] z-30 flex flex-wrap items-center gap-0.5 border-b border-surface-border bg-surface-raised/90 backdrop-blur-md p-2.5 rounded-t-2xl shadow-sm">
       {/* Bold */}
       <ToolbarButton
         onClick={() => editor.chain().focus().toggleBold().run()}
@@ -216,6 +223,49 @@ export default function Toolbar({ editor, onImageUpload, onVideoUpload, htmlMode
                 {size}px
               </button>
             ))}
+          </div>
+        )}
+      </div>
+
+      {/* Line Height */}
+      <div className="relative">
+        <ToolbarButton
+          onClick={() => {
+            closeAllDropdowns();
+            setShowLineHeight((v) => !v);
+          }}
+          title="줄간격"
+        >
+          <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 6v12M20 6l-2 2M20 6l2 2M20 18l-2-2M20 18l2-2" />
+          </svg>
+        </ToolbarButton>
+        {showLineHeight && (
+          <div className="absolute top-full left-0 z-10 mt-1 rounded-xl border border-surface-border bg-surface-raised shadow-soft p-1 min-w-[100px]">
+            {LINE_HEIGHTS.map((lh) => (
+              <button
+                key={lh.value}
+                onMouseDown={(e) => {
+                  e.preventDefault();
+                  editor.chain().focus().setLineHeight(lh.value).run();
+                  setShowLineHeight(false);
+                }}
+                className="block w-full rounded-lg px-3 py-1.5 text-left text-sm text-content-2 hover:bg-surface-overlay hover:text-heading transition-colors"
+              >
+                {lh.label} ({lh.value})
+              </button>
+            ))}
+            <button
+              onMouseDown={(e) => {
+                e.preventDefault();
+                editor.chain().focus().unsetLineHeight().run();
+                setShowLineHeight(false);
+              }}
+              className="block w-full rounded-lg px-3 py-1.5 text-left text-sm text-content-muted hover:bg-surface-overlay hover:text-heading transition-colors border-t border-surface-border mt-1 pt-1.5"
+            >
+              초기화
+            </button>
           </div>
         )}
       </div>
@@ -341,6 +391,15 @@ export default function Toolbar({ editor, onImageUpload, onVideoUpload, htmlMode
       </div>
 
       <div className="mx-1 h-5 w-px bg-surface-border" />
+
+      {/* Inline Code */}
+      <ToolbarButton
+        onClick={() => editor.chain().focus().toggleCode().run()}
+        active={editor.isActive("code")}
+        title="인라인 코드 (Ctrl+E)"
+      >
+        <span className="font-mono text-xs px-0.5 rounded bg-accent-purple/10">{"`"}</span>
+      </ToolbarButton>
 
       {/* Blockquote */}
       <ToolbarButton

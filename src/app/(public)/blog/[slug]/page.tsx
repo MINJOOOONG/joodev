@@ -43,7 +43,7 @@ export default async function PostDetailPage({ params }: Props) {
     <article className="animate-fade-in-up">
       {/* Cover Image */}
       {post.coverUrl && (
-        <div className="relative mx-auto max-w-4xl px-4 sm:px-6 pt-8">
+        <div className="relative mx-auto max-w-[960px] px-4 sm:px-6 pt-8">
           <div className="relative aspect-[2/1] overflow-hidden rounded-2xl border border-surface-border/50">
             <Image
               src={post.coverUrl}
@@ -56,7 +56,7 @@ export default async function PostDetailPage({ params }: Props) {
         </div>
       )}
 
-      <div className="mx-auto max-w-[680px] px-4 sm:px-6 py-12 sm:py-16">
+      <div className="mx-auto max-w-[860px] px-4 sm:px-6 py-12 sm:py-16">
         {/* Back link */}
         <Link
           href="/blog"

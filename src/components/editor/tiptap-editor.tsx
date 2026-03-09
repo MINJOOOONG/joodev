@@ -5,6 +5,7 @@ import StarterKit from "@tiptap/starter-kit";
 import Underline from "@tiptap/extension-underline";
 import LinkExt from "@tiptap/extension-link";
 import { ResizableImage } from "./resizable-image";
+import { VideoNode } from "./video-node";
 import Youtube from "@tiptap/extension-youtube";
 import TextStyle from "@tiptap/extension-text-style";
 import Color from "@tiptap/extension-color";
@@ -18,6 +19,7 @@ import typescript from "highlight.js/lib/languages/typescript";
 import python from "highlight.js/lib/languages/python";
 import bash from "highlight.js/lib/languages/bash";
 import { FontSize } from "./font-size";
+import { LineHeight } from "./line-height";
 import Toolbar from "./toolbar";
 import { useCallback, useRef, useState, useEffect } from "react";
 import type { JSONContent } from "@tiptap/react";
@@ -51,7 +53,7 @@ export default function TipTapEditor({
   const editor = useEditor({
     extensions: [
       StarterKit.configure({
-        codeBlock: false, // replaced by CodeBlockLowlight
+        codeBlock: false,
       }),
       Underline,
       LinkExt.configure({
@@ -59,6 +61,7 @@ export default function TipTapEditor({
         HTMLAttributes: { rel: "noopener noreferrer" },
       }),
       ResizableImage,
+      VideoNode,
       Youtube.configure({
         width: 640,
         height: 360,
@@ -67,6 +70,7 @@ export default function TipTapEditor({
       TextStyle,
       Color,
       FontSize,
+      LineHeight,
       Placeholder.configure({
         placeholder: "내용을 입력하세요...",
       }),
@@ -158,9 +162,10 @@ export default function TipTapEditor({
 
       const url = await uploadFile(file);
       if (url) {
-        editor.commands.insertContent(
-          `<video src="${url}" controls class="w-full rounded-lg my-4"></video>`
-        );
+        editor.chain().focus().insertContent({
+          type: "video",
+          attrs: { src: url },
+        }).run();
       }
       e.target.value = "";
     },
@@ -209,11 +214,9 @@ export default function TipTapEditor({
   const handleToggleHtmlMode = useCallback(() => {
     if (!editor) return;
     if (!htmlMode) {
-      // Switching TO HTML mode — get current HTML from editor
       setHtmlSource(editor.getHTML());
       setHtmlMode(true);
     } else {
-      // Switching FROM HTML mode — apply HTML back to editor immediately
       editor.commands.setContent(htmlSource, false);
       onChange?.(editor.getJSON());
       setHtmlMode(false);
@@ -229,7 +232,8 @@ export default function TipTapEditor({
   }
 
   return (
-    <div className="card overflow-hidden">
+    <div className="rounded-2xl border border-surface-border bg-surface text-content-1 shadow-card">
+      {/* Toolbar: sticky, sits below the admin nav (h-14 = 56px + 1px border) */}
       <Toolbar
         editor={editor}
         onImageUpload={handleImageUpload}
@@ -264,7 +268,7 @@ export default function TipTapEditor({
           <textarea
             value={htmlSource}
             onChange={(e) => setHtmlSource(e.target.value)}
-            className="w-full min-h-[400px] p-6 pt-10 bg-dark-975 text-content-2 font-mono text-[13px] leading-[1.7] border-0 outline-none resize-y"
+            className="w-full min-h-[400px] p-6 pt-10 bg-dark-975 text-content-2 font-mono text-[13px] leading-[1.7] border-0 outline-none resize-y rounded-b-2xl"
             spellCheck={false}
           />
         </div>

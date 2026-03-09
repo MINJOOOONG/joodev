@@ -5,20 +5,32 @@ import StarterKit from "@tiptap/starter-kit";
 import Underline from "@tiptap/extension-underline";
 import Link from "@tiptap/extension-link";
 import Image from "@tiptap/extension-image";
+import { VideoNode } from "@/components/editor/video-node";
 
 const ResizableImageRenderer = Image.extend({
   addAttributes() {
     return {
       ...this.parent?.(),
       width: { default: 100 },
+      caption: { default: "" },
+      galleryId: { default: "" },
     };
   },
   renderHTML({ HTMLAttributes }) {
-    const { width, ...rest } = HTMLAttributes;
+    const { width, caption, galleryId, ...rest } = HTMLAttributes;
+    const children: unknown[] = [
+      ["img", { ...rest, class: "rounded-2xl max-w-full shadow-soft" }],
+    ];
+    if (caption) {
+      children.push(["figcaption", { class: "image-caption" }, caption]);
+    }
     return [
       "figure",
-      { style: `width:${width || 100}%; margin: 1.5rem auto; display: flex; justify-content: center;` },
-      ["img", { ...rest, class: "rounded-2xl max-w-full shadow-soft" }],
+      {
+        style: `width:${width || 100}%; margin: 1.5rem auto; display: flex; flex-direction: column; align-items: center;`,
+        ...(galleryId ? { "data-gallery-id": galleryId } : {}),
+      },
+      ...children,
     ];
   },
 });
@@ -26,6 +38,7 @@ import Youtube from "@tiptap/extension-youtube";
 import TextStyle from "@tiptap/extension-text-style";
 import Color from "@tiptap/extension-color";
 import { FontSize } from "@/components/editor/font-size";
+import { LineHeight } from "@/components/editor/line-height";
 import CodeBlockLowlight from "@tiptap/extension-code-block-lowlight";
 import { common, createLowlight } from "lowlight";
 import java from "highlight.js/lib/languages/java";
@@ -35,6 +48,7 @@ import typescript from "highlight.js/lib/languages/typescript";
 import python from "highlight.js/lib/languages/python";
 import bash from "highlight.js/lib/languages/bash";
 import { useEffect, useRef, useState, useCallback } from "react";
+import { createPortal } from "react-dom";
 import type { JSONContent } from "@tiptap/react";
 import mermaid from "mermaid";
 import { useTheme } from "./theme-provider";
@@ -47,6 +61,7 @@ lowlight.register("typescript", typescript);
 lowlight.register("python", python);
 lowlight.register("bash", bash);
 
+/* ─── Mermaid Block (original UI: Diagram / Code / Both) ─── */
 type MermaidViewMode = "diagram" | "code" | "both";
 
 function MermaidBlock({ code, theme }: { code: string; theme: string }) {
@@ -149,6 +164,7 @@ function MermaidBlock({ code, theme }: { code: string; theme: string }) {
   );
 }
 
+/* ─── PostRenderer ─── */
 interface PostRendererProps {
   content: JSONContent;
 }
@@ -156,6 +172,7 @@ interface PostRendererProps {
 export default function PostRenderer({ content }: PostRendererProps) {
   const { theme } = useTheme();
   const [mermaidBlocks, setMermaidBlocks] = useState<{ index: number; code: string }[]>([]);
+  const [mountPoints, setMountPoints] = useState<HTMLElement[]>([]);
   const containerRef = useRef<HTMLDivElement>(null);
 
   // Extract mermaid blocks from content
@@ -190,7 +207,6 @@ export default function PostRenderer({ content }: PostRendererProps) {
         const code = node.content?.map((c) => c.text || "").join("") || "";
         if (code.trim()) {
           mermaidIdx++;
-          // Replace with an empty paragraph as a placeholder — MermaidBlock renders separately
           return { type: "paragraph", content: [{ type: "text", text: `%%mermaid-placeholder-${mermaidIdx - 1}%%` }] };
         }
       }
@@ -208,10 +224,12 @@ export default function PostRenderer({ content }: PostRendererProps) {
       Underline,
       Link.configure({ openOnClick: true }),
       ResizableImageRenderer,
+      VideoNode,
       Youtube.configure({ width: 640, height: 360 }),
       TextStyle,
       Color,
       FontSize,
+      LineHeight,
       CodeBlockLowlight.configure({ lowlight }),
     ],
     content: modifiedContent,
@@ -226,7 +244,7 @@ export default function PostRenderer({ content }: PostRendererProps) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [editor, content]);
 
-  // Replace placeholder text with mermaid mount points after render
+  // Find placeholder paragraphs and replace them with mount-point divs for portals
   useEffect(() => {
     if (!containerRef.current || mermaidBlocks.length === 0) return;
 
@@ -234,24 +252,74 @@ export default function PostRenderer({ content }: PostRendererProps) {
       const container = containerRef.current;
       if (!container) return;
 
-      // Find placeholder paragraphs and hide them
       const walker = document.createTreeWalker(container, NodeFilter.SHOW_TEXT);
-      const placeholders: { node: Text; idx: number }[] = [];
+      const found: { node: Text; idx: number }[] = [];
       let textNode: Text | null;
       while ((textNode = walker.nextNode() as Text | null)) {
         const match = textNode.textContent?.match(/%%mermaid-placeholder-(\d+)%%/);
         if (match) {
-          placeholders.push({ node: textNode, idx: parseInt(match[1]) });
+          found.push({ node: textNode, idx: parseInt(match[1]) });
         }
       }
 
-      for (const { node } of placeholders) {
+      // Sort by index to ensure correct order
+      found.sort((a, b) => a.idx - b.idx);
+
+      const points: HTMLElement[] = [];
+      for (const { node, idx } of found) {
         const p = node.parentElement;
-        if (p) {
-          p.style.display = "none";
-        }
+        if (!p) continue;
+
+        // Create a mount-point div and replace the placeholder paragraph
+        const mountDiv = document.createElement("div");
+        mountDiv.setAttribute("data-mermaid-mount", String(idx));
+        p.parentNode?.replaceChild(mountDiv, p);
+        points[idx] = mountDiv;
       }
-    }, 100);
+
+      setMountPoints([...points]);
+    }, 150);
+
+    return () => clearTimeout(timer);
+  }, [editor, content, mermaidBlocks]);
+
+  // Group figures with matching data-gallery-id into gallery rows
+  useEffect(() => {
+    if (!containerRef.current) return;
+
+    const timer = setTimeout(() => {
+      const container = containerRef.current;
+      if (!container) return;
+
+      const editorEl = container.querySelector(".tiptap");
+      if (!editorEl) return;
+
+      // Collect all figures with gallery IDs
+      const figures = Array.from(editorEl.querySelectorAll("figure[data-gallery-id]")) as HTMLElement[];
+      const groups = new Map<string, HTMLElement[]>();
+
+      for (const fig of figures) {
+        const gid = fig.getAttribute("data-gallery-id");
+        if (!gid) continue;
+        if (!groups.has(gid)) groups.set(gid, []);
+        groups.get(gid)!.push(fig);
+      }
+
+      // Wrap each group in a gallery row
+      groups.forEach((figs) => {
+        if (figs.length < 2) return;
+        // Check if already wrapped
+        if (figs[0].parentElement?.classList.contains("image-gallery-row")) return;
+
+        const wrapper = document.createElement("div");
+        wrapper.className = "image-gallery-row";
+        wrapper.setAttribute("data-count", String(figs.length));
+        figs[0].parentNode?.insertBefore(wrapper, figs[0]);
+        for (const fig of figs) {
+          wrapper.appendChild(fig);
+        }
+      });
+    }, 200);
 
     return () => clearTimeout(timer);
   }, [editor, content, mermaidBlocks]);
@@ -259,10 +327,15 @@ export default function PostRenderer({ content }: PostRendererProps) {
   return (
     <div ref={containerRef} className="tiptap article-content max-w-none">
       <EditorContent editor={editor} />
-      {/* Render mermaid blocks as React components at the end (they appear via CSS order or we accept bottom placement) */}
-      {mermaidBlocks.map((block, i) => (
-        <MermaidBlock key={`${i}-${theme}`} code={block.code} theme={theme} />
-      ))}
+      {/* Portal each MermaidBlock into its mount-point div at the original position */}
+      {mermaidBlocks.map((block, i) =>
+        mountPoints[i]
+          ? createPortal(
+              <MermaidBlock key={`${i}-${theme}`} code={block.code} theme={theme} />,
+              mountPoints[i]
+            )
+          : null
+      )}
     </div>
   );
 }
