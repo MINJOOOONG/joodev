@@ -17,6 +17,10 @@ const galmuri = localFont({
 export const metadata: Metadata = {
   title: "JooDev Blog",
   description: "A personal tech blog",
+  icons: {
+    icon: "/favicon.png",
+    apple: "/favicon.png",
+  },
 };
 
 export default function RootLayout({
