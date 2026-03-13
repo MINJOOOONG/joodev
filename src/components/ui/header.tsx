@@ -92,6 +92,17 @@ export default function Header() {
               >
                 Blog
               </Link>
+              <Link
+                href="/explore"
+                className={cn(
+                  "rounded-lg px-3 py-1.5 text-[13px] font-semibold transition-all duration-200",
+                  pathname === "/explore"
+                    ? "bg-accent-purple/10 text-accent-purple"
+                    : "text-content-3 hover:bg-surface-raised/80 hover:text-content-1"
+                )}
+              >
+                Explore
+              </Link>
 
               <div className="mx-1.5 h-4 w-px bg-surface-border/40" />
 
