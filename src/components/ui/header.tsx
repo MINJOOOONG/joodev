@@ -43,19 +43,25 @@ export default function Header() {
           <div className="flex h-16 items-center justify-between">
             <Link href="/home" className="group flex items-center gap-2.5">
               <div
-                className="relative flex items-center justify-center transition-all duration-300 group-hover:scale-110 cursor-pointer"
+                className="relative flex items-center justify-center cursor-pointer"
                 onClick={(e) => { e.preventDefault(); toggleMusic(); meow(); }}
+                role="button"
+                aria-label={playing ? "배경음악 정지" : "배경음악 재생"}
               >
-                <PixelCat size={36} />
+                <div className="transition-transform duration-300 group-hover:scale-110">
+                  <PixelCat size={36} />
+                </div>
                 {/* 음악 상태 말풍선 */}
                 <span
-                  className={`pointer-events-none absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full text-[8px] leading-none transition-all duration-300 ${
+                  className={cn(
+                    "absolute -top-3.5 left-1/2 -translate-x-1/2 rounded-full px-2 py-0.5 text-[9px] font-bold leading-none whitespace-nowrap transition-all duration-300 hover:scale-110",
+                    "after:absolute after:top-full after:left-1/2 after:-translate-x-1/2 after:border-[3px] after:border-transparent",
                     playing
-                      ? "bg-accent-purple/20 text-accent-purple scale-100 opacity-100"
-                      : "bg-surface-raised/60 text-content-muted scale-90 opacity-70"
-                  }`}
+                      ? "bg-accent-purple text-white shadow-glow-sm after:border-t-accent-purple"
+                      : "bg-surface-raised text-content-3 border border-surface-border after:border-t-surface-raised"
+                  )}
                 >
-                  {playing ? "♪" : "⏸"}
+                  {playing ? "Stop" : "Play"}
                 </span>
               </div>
               <span className="text-lg font-extrabold tracking-tight text-heading">
