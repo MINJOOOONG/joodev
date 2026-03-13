@@ -19,7 +19,7 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { title, excerpt, contentJson, coverUrl, images, status, tags, category } = body;
+    const { title, excerpt, contentJson, coverUrl, images, status, tags, category, startDate, endDate } = body;
 
     if (!title || typeof title !== "string") {
       return NextResponse.json(
@@ -47,6 +47,8 @@ export async function POST(request: NextRequest) {
         category: category || "Uncategorized",
         status: status === "PUBLISHED" ? "PUBLISHED" : "DRAFT",
         publishedAt: status === "PUBLISHED" ? new Date() : null,
+        startDate: startDate ? new Date(startDate) : null,
+        endDate: endDate ? new Date(endDate) : null,
         tags: {
           create: (tags as string[] | undefined)?.map((name: string) => ({ name })) || [],
         },

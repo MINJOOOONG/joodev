@@ -23,6 +23,18 @@ export function formatDate(date: Date | string): string {
   });
 }
 
+export function formatDateRange(start?: Date | string | null, end?: Date | string | null): string {
+  if (!start) return "";
+  const fmt = (d: Date | string) => {
+    const date = new Date(d);
+    const m = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
+    return `${m}/${day}`;
+  };
+  if (!end) return fmt(start);
+  return `${fmt(start)} - ${fmt(end)}`;
+}
+
 export function truncate(str: string, length: number): string {
   if (str.length <= length) return str;
   return str.slice(0, length) + "...";

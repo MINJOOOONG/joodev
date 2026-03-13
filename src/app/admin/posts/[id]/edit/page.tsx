@@ -16,6 +16,8 @@ interface PostData {
   category: string;
   status: "DRAFT" | "PUBLISHED";
   tags: { name: string }[];
+  startDate: string | null;
+  endDate: string | null;
 }
 
 export default function EditPostPage() {

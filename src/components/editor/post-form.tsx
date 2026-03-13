@@ -39,6 +39,8 @@ interface PostFormProps {
     category: string;
     status: "DRAFT" | "PUBLISHED";
     tags: { name: string }[];
+    startDate: string | null;
+    endDate: string | null;
   };
 }
 
@@ -52,6 +54,12 @@ export default function PostForm({ initialData }: PostFormProps) {
   const [category, setCategory] = useState(initialData?.category ?? "Uncategorized");
   const [tags, setTags] = useState(
     initialData?.tags.map((t) => t.name).join(", ") ?? ""
+  );
+  const [startDate, setStartDate] = useState(
+    initialData?.startDate ? initialData.startDate.slice(0, 10) : ""
+  );
+  const [endDate, setEndDate] = useState(
+    initialData?.endDate ? initialData.endDate.slice(0, 10) : ""
   );
   const [content, setContent] = useState<JSONContent>(
     initialData?.contentJson ?? { type: "doc", content: [{ type: "paragraph" }] }
@@ -71,6 +79,8 @@ export default function PostForm({ initialData }: PostFormProps) {
     tags: initialData?.tags.map((t) => t.name).join(", ") ?? "",
     images: initialData?.images ?? [],
     coverUrl: initialData?.coverUrl ?? "",
+    startDate: initialData?.startDate ? initialData.startDate.slice(0, 10) : "",
+    endDate: initialData?.endDate ? initialData.endDate.slice(0, 10) : "",
   });
 
   useEffect(() => {
@@ -81,9 +91,11 @@ export default function PostForm({ initialData }: PostFormProps) {
       category !== saved.category ||
       tags !== saved.tags ||
       coverUrl !== saved.coverUrl ||
+      startDate !== saved.startDate ||
+      endDate !== saved.endDate ||
       JSON.stringify(images) !== JSON.stringify(saved.images);
     setIsDirty(dirty);
-  }, [title, excerpt, category, tags, images, coverUrl]);
+  }, [title, excerpt, category, tags, images, coverUrl, startDate, endDate]);
 
   const contentDirtyRef = useRef(false);
   const handleContentChange = useCallback((json: JSONContent) => {
@@ -103,10 +115,10 @@ export default function PostForm({ initialData }: PostFormProps) {
   }, [isDirty]);
 
   const markClean = useCallback(() => {
-    lastSavedRef.current = { title, excerpt, category, tags, images, coverUrl };
+    lastSavedRef.current = { title, excerpt, category, tags, images, coverUrl, startDate, endDate };
     contentDirtyRef.current = false;
     setIsDirty(false);
-  }, [title, excerpt, category, tags, images, coverUrl]);
+  }, [title, excerpt, category, tags, images, coverUrl, startDate, endDate]);
 
   const handleSave = useCallback(
     async (saveStatus: "DRAFT" | "PUBLISHED") => {
@@ -148,6 +160,8 @@ export default function PostForm({ initialData }: PostFormProps) {
           category,
           status: saveStatus,
           tags: tagList,
+          startDate: startDate || null,
+          endDate: endDate || null,
         };
 
         const url = isEdit ? `/api/posts/${initialData!.id}` : "/api/posts";
@@ -183,7 +197,7 @@ export default function PostForm({ initialData }: PostFormProps) {
         setSaving(false);
       }
     },
-    [title, excerpt, content, coverUrl, images, tags, isEdit, initialData, router, toast, markClean]
+    [title, excerpt, content, coverUrl, images, tags, startDate, endDate, isEdit, initialData, router, toast, markClean]
   );
 
   const handleImageUpload = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -324,6 +338,37 @@ export default function PostForm({ initialData }: PostFormProps) {
               {cat}
             </button>
           ))}
+        </div>
+      </div>
+
+      {/* Activity Date Range */}
+      <div>
+        <label className="block text-sm font-semibold text-content-3 mb-1.5">
+          활동 기간 <span className="text-content-muted font-normal">(선택)</span>
+        </label>
+        <div className="flex items-center gap-3">
+          <input
+            type="date"
+            value={startDate}
+            onChange={(e) => setStartDate(e.target.value)}
+            className="input-field w-auto text-sm"
+          />
+          <span className="text-content-muted text-sm">~</span>
+          <input
+            type="date"
+            value={endDate}
+            onChange={(e) => setEndDate(e.target.value)}
+            className="input-field w-auto text-sm"
+          />
+          {(startDate || endDate) && (
+            <button
+              type="button"
+              onClick={() => { setStartDate(""); setEndDate(""); }}
+              className="text-xs text-content-muted hover:text-content-2 transition-colors"
+            >
+              초기화
+            </button>
+          )}
         </div>
       </div>
 

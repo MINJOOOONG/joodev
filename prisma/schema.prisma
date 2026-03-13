@@ -18,6 +18,8 @@ model Post {
   category    String    @default("Uncategorized")
   status      PostStatus @default(DRAFT)
   publishedAt DateTime? @map("published_at")
+  startDate   DateTime? @map("start_date")
+  endDate     DateTime? @map("end_date")
   createdAt   DateTime  @default(now()) @map("created_at")
   updatedAt   DateTime  @updatedAt @map("updated_at")
   tags        Tag[]
