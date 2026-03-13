@@ -279,7 +279,16 @@
 }
 
 .tiptap pre code {
-  @apply bg-transparent text-content-2 p-0 text-[13px];
+  @apply bg-transparent text-content-2 p-0 text-[13px] border-0;
+}
+
+.tiptap pre a,
+.tiptap pre code a {
+  @apply no-underline text-inherit;
+}
+
+.tiptap pre code * {
+  text-decoration: none !important;
 }
 
 .tiptap hr {
@@ -375,7 +384,16 @@
 }
 
 .article-content pre code {
-  @apply bg-transparent text-content-2 p-0 text-[13.5px] font-normal;
+  @apply bg-transparent text-content-2 p-0 text-[13.5px] font-normal border-0;
+}
+
+.article-content pre a,
+.article-content pre code a {
+  @apply no-underline text-inherit;
+}
+
+.article-content pre code * {
+  text-decoration: none !important;
 }
 
 .article-content hr {

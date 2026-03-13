@@ -227,7 +227,23 @@ export default function PostRenderer({ content }: PostRendererProps) {
       Color,
       FontSize,
       LineHeight,
-      CodeBlockLowlight.configure({ lowlight }),
+      CodeBlockLowlight.extend({
+        renderHTML({ node, HTMLAttributes }) {
+          return [
+            "pre",
+            { ...HTMLAttributes, "data-language": node.attrs.language || "code" },
+            [
+              "code",
+              {
+                class: node.attrs.language
+                  ? `language-${node.attrs.language}`
+                  : null,
+              },
+              0,
+            ],
+          ];
+        },
+      }).configure({ lowlight }),
     ],
     content: modifiedContent,
     editable: false,

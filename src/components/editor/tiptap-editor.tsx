@@ -71,7 +71,23 @@ export default function TipTapEditor({
       Placeholder.configure({
         placeholder: "내용을 입력하세요...",
       }),
-      CodeBlockLowlight.configure({
+      CodeBlockLowlight.extend({
+        renderHTML({ node, HTMLAttributes }) {
+          return [
+            "pre",
+            { ...HTMLAttributes, "data-language": node.attrs.language || "code" },
+            [
+              "code",
+              {
+                class: node.attrs.language
+                  ? `language-${node.attrs.language}`
+                  : null,
+              },
+              0,
+            ],
+          ];
+        },
+      }).configure({
         lowlight,
         defaultLanguage: "java",
       }),
