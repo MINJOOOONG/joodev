@@ -8,7 +8,6 @@ import { useToast } from "@/components/ui/toast";
 interface ToolbarProps {
   editor: Editor;
   onImageUpload: () => void;
-  onVideoUpload: () => void;
   htmlMode?: boolean;
   onToggleHtmlMode?: () => void;
 }
@@ -38,15 +37,15 @@ function isValidYouTubeUrl(url: string): boolean {
   return /^(https?:\/\/)?(www\.)?(youtube\.com\/(watch\?v=|embed\/|shorts\/)|youtu\.be\/)[\w-]+/.test(url);
 }
 
-function hasYouTubeEmbed(editor: Editor): boolean {
-  let found = false;
+function countYouTubeEmbeds(editor: Editor): number {
+  let count = 0;
   editor.state.doc.descendants((node) => {
-    if (node.type.name === "youtube") found = true;
+    if (node.type.name === "youtube") count++;
   });
-  return found;
+  return count;
 }
 
-export default function Toolbar({ editor, onImageUpload, onVideoUpload, htmlMode, onToggleHtmlMode }: ToolbarProps) {
+export default function Toolbar({ editor, onImageUpload, htmlMode, onToggleHtmlMode }: ToolbarProps) {
   const { toast } = useToast();
   const [showFontSize, setShowFontSize] = useState(false);
   const [showColors, setShowColors] = useState(false);
@@ -89,8 +88,8 @@ export default function Toolbar({ editor, onImageUpload, onVideoUpload, htmlMode
       toast("올바른 YouTube URL을 입력해주세요.", "error");
       return;
     }
-    if (hasYouTubeEmbed(editor)) {
-      toast("YouTube 영상은 글 하나당 1개만 삽입할 수 있습니다.", "info");
+    if (countYouTubeEmbeds(editor) >= 5) {
+      toast("YouTube 영상은 최대 5개까지 삽입할 수 있습니다.", "info");
       return;
     }
     editor.commands.setYoutubeVideo({ src: youtubeUrl });
@@ -459,25 +458,18 @@ export default function Toolbar({ editor, onImageUpload, onVideoUpload, htmlMode
         </svg>
       </ToolbarButton>
 
-      {/* Video */}
-      <ToolbarButton onClick={onVideoUpload} title="영상 업로드">
-        <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
-        </svg>
-      </ToolbarButton>
-
       {/* YouTube */}
       <div className="relative">
         <ToolbarButton
           onClick={() => {
-            if (hasYouTubeEmbed(editor)) {
-              toast("YouTube 영상은 글 하나당 1개만 삽입할 수 있습니다.", "info");
+            if (countYouTubeEmbeds(editor) >= 5) {
+              toast("YouTube 영상은 최대 5개까지 삽입할 수 있습니다.", "info");
               return;
             }
             closeAllDropdowns();
             setShowYouTube((v) => !v);
           }}
-          title="YouTube 임베드 (1개 제한)"
+          title="YouTube 임베드 (최대 5개)"
         >
           <span className="text-xs font-bold text-red-400">YT</span>
         </ToolbarButton>

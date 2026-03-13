@@ -5,8 +5,7 @@ import StarterKit from "@tiptap/starter-kit";
 import Underline from "@tiptap/extension-underline";
 import Link from "@tiptap/extension-link";
 import Image from "@tiptap/extension-image";
-import { VideoNode } from "@/components/editor/video-node";
-
+import Youtube from "@tiptap/extension-youtube";
 const ResizableImageRenderer = Image.extend({
   addAttributes() {
     return {
@@ -34,7 +33,6 @@ const ResizableImageRenderer = Image.extend({
     ];
   },
 });
-import Youtube from "@tiptap/extension-youtube";
 import TextStyle from "@tiptap/extension-text-style";
 import Color from "@tiptap/extension-color";
 import { FontSize } from "@/components/editor/font-size";
@@ -224,7 +222,6 @@ export default function PostRenderer({ content }: PostRendererProps) {
       Underline,
       Link.configure({ openOnClick: true }),
       ResizableImageRenderer,
-      VideoNode,
       Youtube.configure({ width: 640, height: 360 }),
       TextStyle,
       Color,

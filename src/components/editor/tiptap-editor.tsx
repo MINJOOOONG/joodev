@@ -5,7 +5,6 @@ import StarterKit from "@tiptap/starter-kit";
 import Underline from "@tiptap/extension-underline";
 import LinkExt from "@tiptap/extension-link";
 import { ResizableImage } from "./resizable-image";
-import { VideoNode } from "./video-node";
 import Youtube from "@tiptap/extension-youtube";
 import TextStyle from "@tiptap/extension-text-style";
 import Color from "@tiptap/extension-color";
@@ -48,7 +47,6 @@ export default function TipTapEditor({
   const [htmlMode, setHtmlMode] = useState(false);
   const [htmlSource, setHtmlSource] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const videoInputRef = useRef<HTMLInputElement>(null);
 
   const editor = useEditor({
     extensions: [
@@ -61,7 +59,6 @@ export default function TipTapEditor({
         HTMLAttributes: { rel: "noopener noreferrer" },
       }),
       ResizableImage,
-      VideoNode,
       Youtube.configure({
         width: 640,
         height: 360,
@@ -134,10 +131,6 @@ export default function TipTapEditor({
     fileInputRef.current?.click();
   }, []);
 
-  const handleVideoUpload = useCallback(() => {
-    videoInputRef.current?.click();
-  }, []);
-
   const handleFileChange = useCallback(
     async (e: React.ChangeEvent<HTMLInputElement>) => {
       const file = e.target.files?.[0];
@@ -148,23 +141,6 @@ export default function TipTapEditor({
         editor.chain().focus().insertContent({
           type: "image",
           attrs: { src: url, alt: file.name, width: 100 },
-        }).run();
-      }
-      e.target.value = "";
-    },
-    [editor, uploadFile]
-  );
-
-  const handleVideoChange = useCallback(
-    async (e: React.ChangeEvent<HTMLInputElement>) => {
-      const file = e.target.files?.[0];
-      if (!file || !editor) return;
-
-      const url = await uploadFile(file);
-      if (url) {
-        editor.chain().focus().insertContent({
-          type: "video",
-          attrs: { src: url },
         }).run();
       }
       e.target.value = "";
@@ -186,13 +162,6 @@ export default function TipTapEditor({
               type: "image",
               attrs: { src: url, alt: file.name, width: 100 },
             }).run();
-          }
-        } else if (file.type.startsWith("video/")) {
-          const url = await uploadFile(file);
-          if (url) {
-            editor.commands.insertContent(
-              `<video src="${url}" controls class="w-full rounded-lg my-4"></video>`
-            );
           }
         }
       }
@@ -237,7 +206,6 @@ export default function TipTapEditor({
       <Toolbar
         editor={editor}
         onImageUpload={handleImageUpload}
-        onVideoUpload={handleVideoUpload}
         htmlMode={htmlMode}
         onToggleHtmlMode={handleToggleHtmlMode}
       />
@@ -283,13 +251,6 @@ export default function TipTapEditor({
         type="file"
         accept="image/jpeg,image/png,image/webp,image/gif"
         onChange={handleFileChange}
-        className="hidden"
-      />
-      <input
-        ref={videoInputRef}
-        type="file"
-        accept="video/mp4,video/webm"
-        onChange={handleVideoChange}
         className="hidden"
       />
     </div>
