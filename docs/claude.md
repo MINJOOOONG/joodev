@@ -9,7 +9,7 @@
 - **특징**: 고양이 테마 + 다크 퍼플 디자인 시스템
 - **작업 디렉토리**: `blog/` (루트가 아닌 blog 하위 디렉토리)
 - **DB**: Neon PostgreSQL (Prisma db push 방식)
-- **배포**: Vercel 예정
+- **배포**: Vercel (배포 완료, Vercel Blob 이미지 업로드 연동)
 
 ## 핵심 작업 원칙
 
@@ -54,10 +54,10 @@
 
 ### 툴바 버튼 패턴 (중요!)
 ```tsx
-// ❌ 잘못된 패턴 - onClick은 에디터 포커스를 빼앗음
+// 잘못된 패턴 - onClick은 에디터 포커스를 빼앗음
 <button onClick={() => editor.chain().focus().toggleBold().run()}>
 
-// ✅ 올바른 패턴 - onMouseDown + preventDefault로 포커스 유지
+// 올바른 패턴 - onMouseDown + preventDefault로 포커스 유지
 <button onMouseDown={(e) => {
   e.preventDefault();
   editor.chain().focus().toggleBold().run();
@@ -69,16 +69,38 @@
 - CodeBlockLowlight: 에디터와 렌더러 모두에 동일한 lowlight 설정 사용
 - Mermaid: 렌더러에서만 SVG 변환 (에디터에서는 코드 블록으로 표시)
 
+### 이미지 노드뷰 (resizable-image.tsx)
+- 이미지 리사이즈, 캡션, 갤러리 그룹핑을 처리하는 커스텀 노드뷰
+- 갤러리 ID로 이미지 묶음 관리 (최대 3장)
+- `data-gallery-id` 속성으로 CSS 갤러리 레이아웃 적용
+
 ### 콘텐츠 저장 형식
 - 항상 `JSONContent` (ProseMirror JSON) 형태
-- `editor.getJSON()` → DB 저장 → `PostRenderer`에서 읽기 전용 렌더링
+- `editor.getJSON()` -> DB 저장 -> `PostRenderer`에서 읽기 전용 렌더링
 
 ## 파일 업로드
 
 - 개발: 로컬 fs (`public/uploads/`) — BLOB_READ_WRITE_TOKEN 없을 때
 - 배포: Vercel Blob — BLOB_READ_WRITE_TOKEN 있을 때
+- Vercel 환경에서 토큰 없으면 에러 반환 (read-only fs 대응)
 - 허용: JPEG, PNG, WebP, GIF, MP4, WebM
 - 최대: 50MB
+
+## 주요 파일 경로
+
+### 최근 추가된 파일
+- `src/app/(public)/explore/` - Explore 페이지 (타임라인 시각화)
+- `src/lib/timeline.ts` - 타임라인 카테고리 설정 (6개 카테고리)
+- `src/hooks/use-music.ts` - 배경 음악 플레이어
+- `src/hooks/use-meow.ts` - 야옹 효과음
+- `src/components/editor/resizable-image.tsx` - 이미지 리사이즈 + 갤러리 그룹핑
+- `src/components/editor/line-height.ts` - 줄 간격 확장
+
+### 핵심 파일
+- `src/components/editor/toolbar.tsx` - Sticky 에디터 툴바
+- `src/components/editor/post-form.tsx` - 글 작성 폼 (활동 기간 입력 포함)
+- `src/components/ui/header.tsx` - 헤더 (음악 토글)
+- `src/app/api/upload/route.ts` - 파일 업로드 (Blob/로컬 분기)
 
 ## 환경 변수
 
@@ -101,8 +123,13 @@ BLOB_READ_WRITE_TOKEN=<Vercel Blob 토큰, 배포 시 필요>
 1. `src/app/api/` 아래에 route.ts 생성
 2. 인증 필요 시 `middleware.ts`의 matcher에 경로 추가
 
+### 타임라인 카테고리 추가/수정
+1. `src/lib/timeline.ts`의 `TIMELINE_CATEGORIES` 배열 수정
+2. `explore-client.tsx`에서 렌더링 확인
+
 ## 알려진 이슈
 
-1. **한글 슬러그**: slugify가 한글을 strip → timestamp fallback
-2. **Rate Limit**: 인메모리 → 서버 재시작 시 초기화
+1. **한글 슬러그**: slugify가 한글을 strip -> timestamp fallback
+2. **Rate Limit**: 인메모리 -> 서버 재시작 시 초기화
 3. **비밀번호**: 평문 비교 사용 중 (bcrypt 미적용)
+4. **음악 자동재생**: 브라우저 정책으로 첫 재생 시 사용자 인터랙션 필요할 수 있음
