@@ -500,6 +500,18 @@ export default function Toolbar({ editor, onImageUpload, htmlMode, onToggleHtmlM
             <span className="text-xs">&mdash;</span>
           </ToolbarButton>
 
+          {/* Details / 접은글 */}
+          <ToolbarButton
+            onClick={() => editor.chain().focus().toggleDetails().run()}
+            active={editor.isActive("details")}
+            title="접은글"
+          >
+            <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4h16M4 20h16" />
+            </svg>
+          </ToolbarButton>
+
           <Separator />
 
           {/* Image */}

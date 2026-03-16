@@ -37,6 +37,7 @@ import TextStyle from "@tiptap/extension-text-style";
 import Color from "@tiptap/extension-color";
 import { FontSize } from "@/components/editor/font-size";
 import { LineHeight } from "@/components/editor/line-height";
+import { Details, DetailsSummary, DetailsContent } from "@/components/editor/details";
 import CodeBlockLowlight from "@tiptap/extension-code-block-lowlight";
 import { common, createLowlight } from "lowlight";
 import java from "highlight.js/lib/languages/java";
@@ -227,6 +228,14 @@ export default function PostRenderer({ content }: PostRendererProps) {
       Color,
       FontSize,
       LineHeight,
+      Details.extend({
+        renderHTML({ HTMLAttributes }) {
+          // Reader mode: start collapsed (no open attribute)
+          return ["details", HTMLAttributes, 0];
+        },
+      }),
+      DetailsSummary,
+      DetailsContent,
       CodeBlockLowlight.extend({
         renderHTML({ node, HTMLAttributes }) {
           return [

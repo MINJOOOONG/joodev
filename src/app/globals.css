@@ -308,6 +308,30 @@
   content: attr(data-placeholder);
 }
 
+/* Details / 접은글 (Editor) */
+.tiptap details {
+  @apply border border-surface-border/60 rounded-xl my-4 overflow-hidden;
+}
+
+.tiptap details summary {
+  @apply px-4 py-3 font-semibold text-[14px] text-heading cursor-pointer select-none bg-accent-purple/[0.04];
+  list-style: none;
+}
+
+.tiptap details summary::-webkit-details-marker,
+.tiptap details summary::marker {
+  display: none;
+}
+
+.tiptap details summary::before {
+  content: "▼ ";
+  @apply text-accent-purple/50 text-xs mr-1;
+}
+
+.tiptap details .details-content {
+  @apply px-4 py-3 border-t border-surface-border/40;
+}
+
 /* =============================================
    Article Renderer Styles (toss.tech inspired)
    ============================================= */
@@ -406,6 +430,42 @@
 
 .article-content div[data-youtube-video] iframe {
   @apply w-full aspect-video rounded-2xl;
+}
+
+/* Details / 접은글 (Reader) */
+.article-content details {
+  @apply border border-surface-border/60 rounded-2xl my-8 overflow-hidden;
+}
+
+.article-content details summary {
+  @apply px-5 py-3.5 font-semibold text-[15px] text-heading cursor-pointer select-none bg-accent-purple/[0.04] transition-colors duration-200 hover:bg-accent-purple/[0.07];
+  list-style: none;
+}
+
+.article-content details summary::-webkit-details-marker,
+.article-content details summary::marker {
+  display: none;
+}
+
+.article-content details summary::before {
+  content: "▶ ";
+  @apply text-accent-purple/50 text-xs mr-1.5 inline-block transition-transform duration-200;
+}
+
+.article-content details[open] summary::before {
+  content: "▼ ";
+}
+
+.article-content details .details-content {
+  @apply px-5 py-4 border-t border-surface-border/40;
+}
+
+.article-content details .details-content > :first-child {
+  @apply mt-0;
+}
+
+.article-content details .details-content > :last-child {
+  @apply mb-0;
 }
 
 /* Image caption */
