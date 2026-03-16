@@ -47,7 +47,7 @@ export default function Header() {
             <div className="flex items-center gap-1.5">
               <button
                 onClick={toggleTheme}
-                className="rounded-lg p-2 text-content-muted hover:bg-surface-raised/80 hover:text-content-2 transition-all duration-200"
+                className="rounded-lg p-2 text-content-muted hover:bg-surface-raised/80 hover:text-content-2 transition-colors duration-200"
                 title={theme === "dark" ? "라이트 모드" : "다크 모드"}
               >
                 {theme === "dark" ? (
@@ -64,7 +64,7 @@ export default function Header() {
                 href="https://github.com/MINJOOOONG"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="rounded-lg p-2 text-content-muted hover:bg-surface-raised/80 hover:text-content-2 transition-all duration-200"
+                className="rounded-lg p-2 text-content-muted hover:bg-surface-raised/80 hover:text-content-2 transition-colors duration-200"
                 title="GitHub"
               >
                 <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 24 24">

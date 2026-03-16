@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import BlogCard from "@/components/ui/blog-card";
 import { SleepingCat } from "@/components/ui/cat-icon";
 
@@ -24,9 +24,10 @@ interface BlogListClientProps {
 export default function BlogListClient({ posts, categories }: BlogListClientProps) {
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
 
-  const filtered = activeCategory
-    ? posts.filter((p) => p.category === activeCategory)
-    : posts;
+  const filtered = useMemo(
+    () => activeCategory ? posts.filter((p) => p.category === activeCategory) : posts,
+    [posts, activeCategory]
+  );
 
   return (
     <section className="mx-auto max-w-5xl px-4 sm:px-6 py-12 sm:py-16">
@@ -47,21 +48,11 @@ export default function BlogListClient({ posts, categories }: BlogListClientProp
       {/* Category filter */}
       {categories.length > 0 && (
         <div className="mb-8 flex flex-wrap gap-2">
-          <button
-            onClick={() => setActiveCategory(null)}
-            className={`rounded-xl px-3.5 py-1.5 text-xs font-semibold transition-all duration-200 border ${
-              activeCategory === null
-                ? "bg-accent-purple/15 text-accent-purple border-accent-purple/30"
-                : "bg-surface-raised text-content-3 border-surface-border hover:border-surface-border-light hover:text-content-2"
-            }`}
-          >
-            All
-          </button>
           {categories.map((cat) => (
             <button
               key={cat}
-              onClick={() => setActiveCategory(cat)}
-              className={`rounded-xl px-3.5 py-1.5 text-xs font-semibold transition-all duration-200 border ${
+              onClick={() => setActiveCategory(activeCategory === cat ? null : cat)}
+              className={`rounded-xl px-3.5 py-1.5 text-xs font-semibold transition-colors duration-200 border ${
                 activeCategory === cat
                   ? "bg-accent-purple/15 text-accent-purple border-accent-purple/30"
                   : "bg-surface-raised text-content-3 border-surface-border hover:border-surface-border-light hover:text-content-2"

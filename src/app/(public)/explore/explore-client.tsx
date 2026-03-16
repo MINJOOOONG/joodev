@@ -244,22 +244,11 @@ function CategoryFilter({
 }) {
   return (
     <div className="flex flex-wrap gap-2 mb-10 justify-center">
-      <button
-        onClick={() => onSelect(null)}
-        className={`rounded-xl px-4 py-2 text-xs font-semibold transition-all duration-200 border ${
-          activeCategory === null
-            ? "bg-accent-purple/15 text-accent-purple border-accent-purple/30 shadow-glow-sm"
-            : "bg-surface-raised text-content-3 border-surface-border hover:border-surface-border-light hover:text-content-2"
-        }`}
-      >
-        All
-        <span className="ml-1.5 text-[10px] opacity-60">{totalCount}</span>
-      </button>
       {TIMELINE_CATEGORIES.filter((cat) => categoryCounts[cat.key]).map((cat) => (
         <button
           key={cat.key}
-          onClick={() => onSelect(cat.key)}
-          className={`rounded-xl px-4 py-2 text-xs font-semibold transition-all duration-200 border ${
+          onClick={() => onSelect(activeCategory === cat.key ? null : cat.key)}
+          className={`rounded-xl px-4 py-2 text-xs font-semibold transition-colors duration-200 border ${
             activeCategory === cat.key
               ? "bg-accent-purple/15 text-accent-purple border-accent-purple/30 shadow-glow-sm"
               : "bg-surface-raised text-content-3 border-surface-border hover:border-surface-border-light hover:text-content-2"
@@ -692,7 +681,7 @@ function DailyAlbumGrid({ posts }: { posts: Post[] }) {
         <Link
           key={post.id}
           href={`/blog/${post.slug}`}
-          className="group relative aspect-square rounded-2xl overflow-hidden border border-surface-border hover:border-accent-pink/30 transition-all duration-300"
+          className="group relative aspect-square rounded-2xl overflow-hidden border border-surface-border hover:border-accent-pink/30 transition-[border-color] duration-300"
         >
           {post.coverUrl ? (
             <Image
@@ -733,7 +722,7 @@ function TextPostList({ posts }: { posts: Post[] }) {
         <Link
           key={post.id}
           href={`/blog/${post.slug}`}
-          className="group block p-4 rounded-xl border border-surface-border bg-surface hover:border-accent-purple/25 hover:shadow-card-hover transition-all duration-300"
+          className="group block p-4 rounded-xl border border-surface-border bg-surface hover:border-accent-purple/25 hover:shadow-card-hover transition-[border-color,box-shadow] duration-300"
         >
           <div className="flex items-center justify-between mb-1.5">
             <div className="flex items-center gap-2">

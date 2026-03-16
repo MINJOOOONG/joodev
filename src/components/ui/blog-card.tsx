@@ -1,5 +1,6 @@
 "use client";
 
+import { memo, useCallback } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
@@ -17,7 +18,7 @@ interface BlogCardProps {
   tags: { name: string }[];
 }
 
-export default function BlogCard({
+const BlogCard = memo(function BlogCard({
   id,
   slug,
   title,
@@ -30,7 +31,7 @@ export default function BlogCard({
   const { isAuthenticated } = useAuth();
   const router = useRouter();
 
-  const handleDelete = async () => {
+  const handleDelete = useCallback(async () => {
     if (!confirm("정말 삭제하시겠습니까?")) return;
 
     const res = await fetch(`/api/posts/${id}`, { method: "DELETE" });
@@ -39,10 +40,10 @@ export default function BlogCard({
     } else {
       alert("삭제에 실패했습니다.");
     }
-  };
+  }, [id, router]);
 
   return (
-    <article className="group card overflow-hidden hover:border-accent-purple/25 hover:shadow-card-hover hover:-translate-y-1 transition-all duration-300">
+    <article className="group card overflow-hidden hover:border-accent-purple/25 hover:shadow-card-hover hover:-translate-y-1 transition-[border-color,box-shadow,transform] duration-300">
       {coverUrl ? (
         <Link href={`/blog/${slug}`} className="block overflow-hidden">
           <Image
@@ -126,4 +127,6 @@ export default function BlogCard({
       </div>
     </article>
   );
-}
+});
+
+export default BlogCard;

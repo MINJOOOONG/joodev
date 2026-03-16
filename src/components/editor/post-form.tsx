@@ -25,6 +25,7 @@ const CATEGORIES = [
   "QA",
   "DevOps",
   "Review",
+  "Experiences",
   "Daily",
 ] as const;
 
@@ -83,6 +84,15 @@ export default function PostForm({ initialData }: PostFormProps) {
     endDate: initialData?.endDate ? initialData.endDate.slice(0, 10) : "",
   });
 
+  const imagesDirtyRef = useRef(false);
+  const prevImagesRef = useRef(images);
+  if (prevImagesRef.current !== images) {
+    imagesDirtyRef.current =
+      images.length !== lastSavedRef.current.images.length ||
+      images.some((img, i) => img !== lastSavedRef.current.images[i]);
+    prevImagesRef.current = images;
+  }
+
   useEffect(() => {
     const saved = lastSavedRef.current;
     const dirty =
@@ -93,7 +103,7 @@ export default function PostForm({ initialData }: PostFormProps) {
       coverUrl !== saved.coverUrl ||
       startDate !== saved.startDate ||
       endDate !== saved.endDate ||
-      JSON.stringify(images) !== JSON.stringify(saved.images);
+      imagesDirtyRef.current;
     setIsDirty(dirty);
   }, [title, excerpt, category, tags, images, coverUrl, startDate, endDate]);
 
@@ -180,15 +190,19 @@ export default function PostForm({ initialData }: PostFormProps) {
         }
 
         const data = await res.json();
-        markClean();
 
+        // Navigate first for instant feel, then clean up state
         if (saveStatus === "PUBLISHED" && data.slug) {
           toast("글이 발행되었습니다.", "success");
+          // Mark clean before push to prevent beforeunload warning
+          contentDirtyRef.current = false;
           router.push(`/blog/${data.slug}`);
         } else if (!isEdit) {
+          contentDirtyRef.current = false;
           router.push(`/admin/posts/${data.id}/edit`);
           toast("저장되었습니다.", "success");
         } else {
+          markClean();
           toast("저장되었습니다.", "success");
         }
       } catch {
@@ -197,7 +211,7 @@ export default function PostForm({ initialData }: PostFormProps) {
         setSaving(false);
       }
     },
-    [title, excerpt, content, coverUrl, images, tags, startDate, endDate, isEdit, initialData, router, toast, markClean]
+    [title, excerpt, content, coverUrl, images, tags, startDate, endDate, isEdit, initialData, router, toast, markClean, category]
   );
 
   const handleImageUpload = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -306,7 +320,7 @@ export default function PostForm({ initialData }: PostFormProps) {
         value={title}
         onChange={(e) => setTitle(e.target.value)}
         placeholder="게시글 제목을 입력하세요"
-        className="block w-full rounded-2xl border border-surface-border bg-surface px-5 py-3.5 text-xl font-bold text-heading shadow-sm placeholder:text-content-faint focus:border-accent-purple/50 focus:ring-2 focus:ring-accent-purple/20 focus:outline-none transition-all"
+        className="block w-full rounded-2xl border border-surface-border bg-surface px-5 py-3.5 text-xl font-bold text-heading shadow-sm placeholder:text-content-faint focus:border-accent-purple/50 focus:ring-2 focus:ring-accent-purple/20 focus:outline-none transition-[border-color,box-shadow]"
       />
 
       {/* Excerpt */}
@@ -329,7 +343,7 @@ export default function PostForm({ initialData }: PostFormProps) {
               key={cat}
               type="button"
               onClick={() => setCategory(cat)}
-              className={`rounded-xl px-3.5 py-1.5 text-xs font-semibold transition-all duration-200 border ${
+              className={`rounded-xl px-3.5 py-1.5 text-xs font-semibold transition-colors duration-200 border ${
                 category === cat
                   ? "bg-accent-purple/15 text-accent-purple border-accent-purple/30"
                   : "bg-surface-raised text-content-3 border-surface-border hover:border-surface-border-light hover:text-content-2"

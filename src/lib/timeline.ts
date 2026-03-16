@@ -56,6 +56,14 @@ export const TIMELINE_CATEGORIES: TimelineCategory[] = [
     color: "accent-purple",
     glowColor: "rgba(167, 139, 250, 0.6)",
   },
+  {
+    key: "Experiences",
+    label: "Experiences",
+    description: "경험과 인사이트",
+    icon: "💡",
+    color: "accent-orange",
+    glowColor: "rgba(253, 186, 116, 0.6)",
+  },
 ];
 
 export function getTimelineCategory(key: string): TimelineCategory | undefined {

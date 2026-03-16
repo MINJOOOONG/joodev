@@ -209,12 +209,17 @@ export default function IntroPage() {
 
   useEffect(() => setMounted(true), []);
 
+  // prefetch target route on mount for instant navigation
+  useEffect(() => {
+    router.prefetch("/home");
+  }, [router]);
+
   const handleClick = useCallback(() => {
     const meow = new Audio("/sounds/meowsound.wav");
     meow.volume = 0.35;
     meow.play().catch(() => {});
     localStorage.setItem("musicEnabled", "true");
-    setTimeout(() => router.push("/home"), 400);
+    router.push("/home");
   }, [router]);
 
   if (!mounted) return <div className="min-h-screen" />;

@@ -39,7 +39,7 @@ export default function HomePage() {
               >
                 <span className="block">
                   <span className={`title-word ${activeWord === 0 ? "title-word-active" : ""}`}>
-                    Code,
+                    Coding,
                   </span>
                 </span>
                 <span className="block mt-1">
