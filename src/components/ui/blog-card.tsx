@@ -16,6 +16,7 @@ interface BlogCardProps {
   category?: string;
   publishedAt: Date | string;
   tags: { name: string }[];
+  variant?: "card" | "list";
 }
 
 const BlogCard = memo(function BlogCard({
@@ -27,6 +28,7 @@ const BlogCard = memo(function BlogCard({
   category,
   publishedAt,
   tags,
+  variant = "card",
 }: BlogCardProps) {
   const { isAuthenticated } = useAuth();
   const router = useRouter();
@@ -41,6 +43,75 @@ const BlogCard = memo(function BlogCard({
       alert("삭제에 실패했습니다.");
     }
   }, [id, router]);
+
+  if (variant === "list") {
+    return (
+      <article className="group flex items-start gap-4 py-4 border-b border-surface-border/40 last:border-b-0">
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2 mb-1">
+            {(category && category !== "Uncategorized") && (
+              <span className="text-[11px] font-semibold uppercase tracking-wider text-accent-purple/70">
+                {category}
+              </span>
+            )}
+            <time
+              className="text-xs text-content-faint font-mono"
+              dateTime={new Date(publishedAt).toISOString()}
+            >
+              {formatDate(publishedAt)}
+            </time>
+          </div>
+
+          <Link href={`/blog/${slug}`}>
+            <h2 className="text-[15px] font-bold leading-snug text-heading group-hover:text-accent-purple transition-colors duration-200 line-clamp-1">
+              {title}
+            </h2>
+          </Link>
+
+          <p className="mt-1 text-sm leading-relaxed text-content-muted line-clamp-1">
+            {excerpt}
+          </p>
+
+          {tags.length > 0 && (
+            <div className="mt-2 flex flex-wrap gap-1.5">
+              {tags.map((tag) => (
+                <span key={tag.name} className="tag">{tag.name}</span>
+              ))}
+            </div>
+          )}
+        </div>
+
+        <div className="flex items-center gap-2 pt-1 shrink-0">
+          {isAuthenticated && (
+            <>
+              <Link
+                href={`/admin/posts/${id}/edit`}
+                className="text-xs font-medium text-content-muted hover:text-accent-purple transition-colors duration-200"
+              >
+                수정
+              </Link>
+              <button
+                onClick={handleDelete}
+                className="text-xs font-medium text-content-muted hover:text-red-400 transition-colors duration-200"
+              >
+                삭제
+              </button>
+              <span className="h-3 w-px bg-surface-border/40" />
+            </>
+          )}
+          <Link
+            href={`/blog/${slug}`}
+            className="inline-flex items-center gap-1 text-xs font-semibold text-accent-purple/60 group-hover:text-accent-purple transition-colors duration-200"
+          >
+            Read
+            <svg className="h-3 w-3 transition-transform duration-200 group-hover:translate-x-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
+            </svg>
+          </Link>
+        </div>
+      </article>
+    );
+  }
 
   return (
     <article className="group card overflow-hidden hover:border-accent-purple/25 hover:shadow-card-hover hover:-translate-y-1 transition-[border-color,box-shadow,transform] duration-300">

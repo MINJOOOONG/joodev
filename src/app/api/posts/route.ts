@@ -59,7 +59,6 @@ export async function POST(request: NextRequest) {
 
     // Revalidate blog pages so navigation after publish is instant
     revalidatePath("/blog");
-    revalidatePath("/explore");
     if (post.slug) {
       revalidatePath(`/blog/${post.slug}`);
     }

@@ -58,7 +58,7 @@ export default function HomePage() {
                 그리고 고양이처럼 우아한 코드에 대한 이야기.
               </p>
               <div className="mt-8 flex items-center gap-3">
-                <Link href="/explore" className="btn-primary">
+                <Link href="/blog" className="btn-primary">
                   블로그 구경하기
                 </Link>
                 <Link href="/admin/posts/new" className="btn-outline">

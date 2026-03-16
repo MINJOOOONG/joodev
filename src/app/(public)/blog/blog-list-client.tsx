@@ -71,21 +71,57 @@ export default function BlogListClient({ posts, categories }: BlogListClientProp
           <p className="text-sm text-content-muted">아직 게시된 글이 없습니다.</p>
         </div>
       ) : (
-        <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-          {filtered.map((post) => (
-            <BlogCard
-              key={post.id}
-              id={post.id}
-              slug={post.slug}
-              title={post.title}
-              excerpt={post.excerpt}
-              coverUrl={post.coverUrl}
-              category={post.category}
-              publishedAt={post.publishedAt ?? post.createdAt}
-              tags={post.tags}
-            />
-          ))}
-        </div>
+        <>
+          {/* List view for non-Daily posts */}
+          {filtered.some((p) => p.category !== "Daily") && (
+            <div className="card mb-8 divide-y-0 px-5">
+              {filtered
+                .filter((p) => p.category !== "Daily")
+                .map((post) => (
+                  <BlogCard
+                    key={post.id}
+                    id={post.id}
+                    slug={post.slug}
+                    title={post.title}
+                    excerpt={post.excerpt}
+                    category={post.category}
+                    publishedAt={post.publishedAt ?? post.createdAt}
+                    tags={post.tags}
+                    variant="list"
+                  />
+                ))}
+            </div>
+          )}
+
+          {/* Card grid for Daily posts */}
+          {filtered.some((p) => p.category === "Daily") && (
+            <>
+              {filtered.some((p) => p.category !== "Daily") && (
+                <h2 className="mb-4 text-sm font-semibold uppercase tracking-widest text-accent-purple/50 font-mono">
+                  Daily
+                </h2>
+              )}
+              <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+                {filtered
+                  .filter((p) => p.category === "Daily")
+                  .map((post) => (
+                    <BlogCard
+                      key={post.id}
+                      id={post.id}
+                      slug={post.slug}
+                      title={post.title}
+                      excerpt={post.excerpt}
+                      coverUrl={post.coverUrl}
+                      category={post.category}
+                      publishedAt={post.publishedAt ?? post.createdAt}
+                      tags={post.tags}
+                      variant="card"
+                    />
+                  ))}
+              </div>
+            </>
+          )}
+        </>
       )}
     </section>
   );

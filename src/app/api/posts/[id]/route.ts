@@ -82,7 +82,6 @@ export async function PUT(request: NextRequest, context: Context) {
 
     // Revalidate blog pages so navigation after save/publish is instant
     revalidatePath("/blog");
-    revalidatePath("/explore");
     if (post.slug) {
       revalidatePath(`/blog/${post.slug}`);
     }
@@ -111,7 +110,6 @@ export async function DELETE(_request: NextRequest, context: Context) {
 
     // ISR 캐시 무효화: 목록 + 삭제된 글 상세 페이지
     revalidatePath("/blog");
-    revalidatePath("/explore");
     if (post?.slug) {
       revalidatePath(`/blog/${post.slug}`);
     }
