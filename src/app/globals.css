@@ -719,3 +719,33 @@
           drop-shadow(0 1px 0 rgba(0, 0, 0, 0.15))
           drop-shadow(0 -1px 0 rgba(0, 0, 0, 0.15));
 }
+
+/* ── Explore page: neon node hover effects ── */
+.explore-node:hover .explore-node-circle,
+.explore-node:active .explore-node-circle {
+  box-shadow: var(--neon-glow);
+  transform: scale(1.1);
+}
+
+.explore-node:hover .explore-node-icon,
+.explore-node:active .explore-node-icon {
+  color: var(--neon-color);
+}
+
+.explore-node:hover .explore-node-ring,
+.explore-node:active .explore-node-ring {
+  opacity: 1;
+}
+
+.explore-node:hover .explore-node-label {
+  color: var(--neon-color);
+}
+
+.explore-node:hover .explore-node-number {
+  color: var(--neon-color);
+}
+
+.explore-node:hover .explore-node-arrow,
+.explore-node:active .explore-node-arrow {
+  color: var(--neon-color);
+}

@@ -30,7 +30,7 @@ export default function HomePage() {
             <div className="max-w-xl">
               <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-accent-purple/15 bg-accent-purple/[0.05] px-4 py-1.5 text-xs font-semibold text-accent-purple backdrop-blur-sm">
                 <span className="h-1.5 w-1.5 rounded-full bg-accent-purple animate-pulse" />
-                Welcome to my blog
+                Welcome to JooDev
               </div>
 
               <h1
@@ -58,7 +58,7 @@ export default function HomePage() {
                 그리고 고양이처럼 우아한 코드에 대한 이야기.
               </p>
               <div className="mt-8 flex items-center gap-3">
-                <Link href="/blog" className="btn-primary">
+                <Link href="/explore" className="btn-primary">
                   블로그 구경하기
                 </Link>
                 <Link href="/admin/posts/new" className="btn-outline">

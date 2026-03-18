@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { useSearchParams } from "next/navigation";
 import BlogCard from "@/components/ui/blog-card";
 import { SleepingCat } from "@/components/ui/cat-icon";
 
@@ -22,7 +23,11 @@ interface BlogListClientProps {
 }
 
 export default function BlogListClient({ posts, categories }: BlogListClientProps) {
-  const [activeCategory, setActiveCategory] = useState<string | null>(null);
+  const searchParams = useSearchParams();
+  const initialCategory = searchParams.get("category");
+  const [activeCategory, setActiveCategory] = useState<string | null>(
+    initialCategory && categories.includes(initialCategory) ? initialCategory : null
+  );
 
   const filtered = useMemo(
     () => activeCategory ? posts.filter((p) => p.category === activeCategory) : posts,
@@ -31,17 +36,19 @@ export default function BlogListClient({ posts, categories }: BlogListClientProp
 
   return (
     <section className="mx-auto max-w-5xl px-4 sm:px-6 py-12 sm:py-16">
-      <div className="mb-12">
-        <div className="mb-2">
-          <span className="text-xs font-semibold uppercase tracking-widest text-accent-purple/50 font-mono">
-            All Posts
-          </span>
+      <div className="mb-10">
+        <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-accent-purple/15 bg-accent-purple/[0.05] px-4 py-1.5 text-xs font-semibold text-accent-purple backdrop-blur-sm">
+          <span className="h-1.5 w-1.5 rounded-full bg-accent-purple animate-pulse" />
+          All Posts
         </div>
         <h1 className="text-3xl font-extrabold tracking-tight text-heading">
           Blog
         </h1>
         <p className="mt-2 text-sm text-content-muted font-mono">
           {filtered.length} {filtered.length === 1 ? "post" : "posts"}
+          {activeCategory && (
+            <span className="text-accent-purple/60"> in {activeCategory}</span>
+          )}
         </p>
       </div>
 

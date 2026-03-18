@@ -46,7 +46,9 @@ const BlogCard = memo(function BlogCard({
 
   if (variant === "list") {
     return (
-      <article className="group flex items-start gap-4 py-4 border-b border-surface-border/40 last:border-b-0">
+      <article className="group relative flex items-start gap-4 py-4 border-b border-surface-border/40 last:border-b-0 pl-3 hover:bg-accent-purple/[0.02] transition-colors duration-200 -ml-3 rounded-lg">
+        {/* Left accent bar */}
+        <div className="absolute left-0 top-[20%] bottom-[20%] w-[2px] rounded-full bg-transparent group-hover:bg-accent-purple/40 transition-colors duration-200" />
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-1">
             {(category && category !== "Uncategorized") && (
@@ -130,8 +132,15 @@ const BlogCard = memo(function BlogCard({
           href={`/blog/${slug}`}
           className="flex h-36 items-center justify-center bg-gradient-to-br from-accent-purple/[0.06] via-surface to-accent-pink/[0.04] relative overflow-hidden"
         >
-          <div className="relative flex items-center gap-1 text-accent-purple/25 font-mono text-sm">
-            <span>&lt;/&gt;</span>
+          {/* Decorative code lines */}
+          <div className="absolute inset-0 flex flex-col justify-center px-8 gap-2 opacity-[0.07]">
+            <div className="flex gap-2"><div className="h-1.5 w-[20%] rounded-full bg-accent-purple" /><div className="h-1.5 w-[30%] rounded-full bg-accent-mint" /></div>
+            <div className="flex gap-2 pl-4"><div className="h-1.5 w-[25%] rounded-full bg-accent-orange" /><div className="h-1.5 w-[15%] rounded-full bg-accent-blue" /></div>
+            <div className="flex gap-2 pl-4"><div className="h-1.5 w-[18%] rounded-full bg-accent-pink" /><div className="h-1.5 w-[22%] rounded-full bg-accent-purple" /></div>
+            <div className="flex gap-2"><div className="h-1.5 w-[12%] rounded-full bg-accent-blue" /></div>
+          </div>
+          <div className="relative font-mono text-sm text-accent-purple/20 tracking-wider">
+            &lt;/&gt;
           </div>
         </Link>
       )}
