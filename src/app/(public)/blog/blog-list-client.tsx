@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { useSearchParams } from "next/navigation";
 import BlogCard from "@/components/ui/blog-card";
 import { SleepingCat } from "@/components/ui/cat-icon";
 
@@ -20,11 +19,10 @@ interface Post {
 interface BlogListClientProps {
   posts: Post[];
   categories: string[];
+  initialCategory: string | null;
 }
 
-export default function BlogListClient({ posts, categories }: BlogListClientProps) {
-  const searchParams = useSearchParams();
-  const initialCategory = searchParams.get("category");
+export default function BlogListClient({ posts, categories, initialCategory }: BlogListClientProps) {
   const [activeCategory, setActiveCategory] = useState<string | null>(
     initialCategory && categories.includes(initialCategory) ? initialCategory : null
   );

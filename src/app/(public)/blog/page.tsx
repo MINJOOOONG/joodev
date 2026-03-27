@@ -8,17 +8,28 @@ export const metadata = {
   description: "모든 블로그 게시글 목록",
 };
 
-export default async function BlogListPage() {
+interface Props {
+  searchParams: Promise<{ category?: string }>;
+}
+
+export default async function BlogListPage({ searchParams }: Props) {
+  const { category } = await searchParams;
+
   const posts = await prisma.post.findMany({
     where: { status: "PUBLISHED" },
     orderBy: { publishedAt: "desc" },
     include: { tags: true },
   });
 
-  // Collect unique categories
   const categories = Array.from(
     new Set(posts.map((p) => p.category).filter(Boolean))
   );
 
-  return <BlogListClient posts={posts} categories={categories} />;
+  return (
+    <BlogListClient
+      posts={posts}
+      categories={categories}
+      initialCategory={category ?? null}
+    />
+  );
 }
