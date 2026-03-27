@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/db";
+import { getPostBySlug } from "@/lib/queries";
 import { formatDate } from "@/lib/utils";
 import PostRenderer from "@/components/ui/post-renderer";
 import Link from "next/link";
@@ -9,7 +10,15 @@ import PostActions from "@/components/ui/post-actions";
 import type { Metadata } from "next";
 import type { JSONContent } from "@tiptap/react";
 
-export const revalidate = 60;
+export const revalidate = 3600;
+
+export async function generateStaticParams() {
+  const posts = await prisma.post.findMany({
+    where: { status: "PUBLISHED" },
+    select: { slug: true },
+  });
+  return posts.map((p) => ({ slug: p.slug }));
+}
 
 interface Props {
   params: Promise<{ slug: string }>;
@@ -17,10 +26,7 @@ interface Props {
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
-  const post = await prisma.post.findUnique({
-    where: { slug },
-    select: { title: true, excerpt: true },
-  });
+  const post = await getPostBySlug(slug);
 
   if (!post) return { title: "Not Found" };
 
@@ -32,10 +38,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function PostDetailPage({ params }: Props) {
   const { slug } = await params;
-  const post = await prisma.post.findUnique({
-    where: { slug, status: "PUBLISHED" },
-    include: { tags: true },
-  });
+  const post = await getPostBySlug(slug);
 
   if (!post) notFound();
 
