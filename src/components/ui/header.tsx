@@ -32,7 +32,7 @@ export default function Header() {
                 {/* 음악 상태 말풍선 */}
                 <span
                   className={cn(
-                    "absolute -top-3.5 left-1/2 -translate-x-1/2 rounded-full px-2 py-0.5 text-[9px] font-bold leading-none whitespace-nowrap transition-all duration-300 hover:scale-110",
+                    "absolute -top-2.5 left-1/2 -translate-x-1/2 rounded-full px-2 py-0.5 text-[9px] font-bold leading-none whitespace-nowrap transition-all duration-300 hover:scale-110",
                     "after:absolute after:top-full after:left-1/2 after:-translate-x-1/2 after:border-[3px] after:border-transparent",
                     playing
                       ? "bg-accent-purple text-white shadow-glow-sm after:border-t-accent-purple"
