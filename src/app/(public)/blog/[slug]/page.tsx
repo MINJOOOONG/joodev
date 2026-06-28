@@ -31,8 +31,15 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   if (!post) return { title: "Not Found" };
 
   return {
-    title: `${post.title} | JooDev`,
+    title: post.title,
     description: post.excerpt,
+    openGraph: {
+      title: post.title,
+      description: post.excerpt,
+      type: "article",
+      publishedTime: post.publishedAt?.toISOString(),
+      ...(post.coverUrl && { images: [{ url: post.coverUrl }] }),
+    },
   };
 }
 
