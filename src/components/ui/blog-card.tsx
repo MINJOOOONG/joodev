@@ -6,6 +6,7 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { formatDate } from "@/lib/utils";
 import { useAuth } from "./auth-provider";
+import { useToast } from "./toast";
 
 interface BlogCardProps {
   id: string;
@@ -32,6 +33,7 @@ const BlogCard = memo(function BlogCard({
 }: BlogCardProps) {
   const { isAuthenticated } = useAuth();
   const router = useRouter();
+  const { toast } = useToast();
 
   const handleDelete = useCallback(async () => {
     if (!confirm("정말 삭제하시겠습니까?")) return;
@@ -40,9 +42,9 @@ const BlogCard = memo(function BlogCard({
     if (res.ok) {
       router.refresh();
     } else {
-      alert("삭제에 실패했습니다.");
+      toast("삭제에 실패했습니다.", "error");
     }
-  }, [id, router]);
+  }, [id, router, toast]);
 
   if (variant === "list") {
     return (
