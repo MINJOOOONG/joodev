@@ -27,8 +27,6 @@ export default function Footer() {
             >
               GitHub
             </a>
-            <span className="h-3 w-px bg-surface-border/40" />
-            <span>010-4948-5089</span>
           </div>
         </div>
       </div>
