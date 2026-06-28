@@ -22,6 +22,8 @@ interface BlogListClientProps {
   initialCategory: string | null;
 }
 
+const DAILY_CATEGORY = DAILY_CATEGORY;
+
 export default function BlogListClient({ posts, categories, initialCategory }: BlogListClientProps) {
   const [activeCategory, setActiveCategory] = useState<string | null>(
     initialCategory && categories.includes(initialCategory) ? initialCategory : null
@@ -78,10 +80,10 @@ export default function BlogListClient({ posts, categories, initialCategory }: B
       ) : (
         <>
           {/* List view for non-Daily posts */}
-          {filtered.some((p) => p.category !== "Daily") && (
+          {filtered.some((p) => p.category !== DAILY_CATEGORY) && (
             <div className="card mb-8 divide-y-0 px-5">
               {filtered
-                .filter((p) => p.category !== "Daily")
+                .filter((p) => p.category !== DAILY_CATEGORY)
                 .map((post) => (
                   <BlogCard
                     key={post.id}
@@ -99,16 +101,16 @@ export default function BlogListClient({ posts, categories, initialCategory }: B
           )}
 
           {/* Card grid for Daily posts */}
-          {filtered.some((p) => p.category === "Daily") && (
+          {filtered.some((p) => p.category === DAILY_CATEGORY) && (
             <>
-              {filtered.some((p) => p.category !== "Daily") && (
+              {filtered.some((p) => p.category !== DAILY_CATEGORY) && (
                 <h2 className="mb-4 text-sm font-semibold uppercase tracking-widest text-accent-purple/50 font-mono">
                   Daily
                 </h2>
               )}
               <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
                 {filtered
-                  .filter((p) => p.category === "Daily")
+                  .filter((p) => p.category === DAILY_CATEGORY)
                   .map((post) => (
                     <BlogCard
                       key={post.id}
