@@ -271,14 +271,12 @@ export default function PostForm({ initialData }: PostFormProps) {
   }, [images.length, coverUrl, toast]);
 
   const removeImage = useCallback((url: string) => {
-    setImages((prev) => prev.filter((img) => img !== url));
-    if (coverUrl === url) {
-      setCoverUrl(() => {
-        const remaining = images.filter((img) => img !== url);
-        return remaining[0] || "";
-      });
-    }
-  }, [coverUrl, images]);
+    setImages((prev) => {
+      const next = prev.filter((img) => img !== url);
+      if (coverUrl === url) setCoverUrl(next[0] ?? "");
+      return next;
+    });
+  }, [coverUrl]);
 
   return (
     <div className="space-y-5">

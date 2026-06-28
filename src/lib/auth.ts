@@ -1,10 +1,10 @@
 import { SignJWT, jwtVerify } from "jose";
 import { cookies } from "next/headers";
 
-const SESSION_COOKIE = "admin_session";
-const SESSION_MAX_AGE = 60 * 60 * 24 * 7; // 7 days
+export const SESSION_COOKIE = "admin_session";
+export const SESSION_MAX_AGE = 60 * 60 * 24 * 7; // 7 days
 
-function getSecret() {
+export function getSecret() {
   const secret = process.env.SESSION_SECRET;
   if (!secret) throw new Error("SESSION_SECRET is not set");
   return new TextEncoder().encode(secret);

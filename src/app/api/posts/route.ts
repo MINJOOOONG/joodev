@@ -1,11 +1,20 @@
 import { NextRequest, NextResponse } from "next/server";
 import { revalidatePath } from "next/cache";
+import { jwtVerify } from "jose";
 import { prisma } from "@/lib/db";
 import { generateSlug } from "@/lib/utils";
+import { getSecret, SESSION_COOKIE } from "@/lib/auth";
 
 // GET /api/posts - list all posts (admin: all, public: published only)
 export async function GET(request: NextRequest) {
-  const isAdmin = request.cookies.get("admin_session")?.value;
+  let isAdmin = false;
+  const token = request.cookies.get(SESSION_COOKIE)?.value;
+  if (token) {
+    try {
+      await jwtVerify(token, getSecret());
+      isAdmin = true;
+    } catch {}
+  }
 
   const posts = await prisma.post.findMany({
     where: isAdmin ? {} : { status: "PUBLISHED" },

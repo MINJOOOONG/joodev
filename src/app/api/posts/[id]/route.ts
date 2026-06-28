@@ -56,29 +56,29 @@ export async function PUT(request: NextRequest, context: Context) {
       publishedAt = null;
     }
 
-    // Update tags: delete existing, create new
-    await prisma.tag.deleteMany({ where: { postId: id } });
+    const tagData = (tags as string[] | undefined)?.map((name: string) => ({ name })) ?? [];
 
-    const post = await prisma.post.update({
-      where: { id },
-      data: {
-        title: title ?? existing.title,
-        slug,
-        excerpt: excerpt ?? existing.excerpt,
-        contentJson: contentJson ?? existing.contentJson,
-        coverUrl: coverUrl !== undefined ? coverUrl : existing.coverUrl,
-        images: Array.isArray(images) ? images : existing.images,
-        category: category !== undefined ? category : existing.category,
-        status: status ? (status === "PUBLISHED" ? "PUBLISHED" : "DRAFT") : existing.status,
-        publishedAt,
-        startDate: startDate !== undefined ? (startDate ? new Date(startDate) : null) : existing.startDate,
-        endDate: endDate !== undefined ? (endDate ? new Date(endDate) : null) : existing.endDate,
-        tags: {
-          create: (tags as string[] | undefined)?.map((name: string) => ({ name })) || [],
+    const [, post] = await prisma.$transaction([
+      prisma.tag.deleteMany({ where: { postId: id } }),
+      prisma.post.update({
+        where: { id },
+        data: {
+          title: title ?? existing.title,
+          slug,
+          excerpt: excerpt ?? existing.excerpt,
+          contentJson: contentJson ?? existing.contentJson,
+          coverUrl: coverUrl !== undefined ? coverUrl : existing.coverUrl,
+          images: Array.isArray(images) ? images : existing.images,
+          category: category !== undefined ? category : existing.category,
+          status: status ? (status === "PUBLISHED" ? "PUBLISHED" : "DRAFT") : existing.status,
+          publishedAt,
+          startDate: startDate !== undefined ? (startDate ? new Date(startDate) : null) : existing.startDate,
+          endDate: endDate !== undefined ? (endDate ? new Date(endDate) : null) : existing.endDate,
+          tags: { create: tagData },
         },
-      },
-      include: { tags: true },
-    });
+        include: { tags: true },
+      }),
+    ]);
 
     // Revalidate blog pages so navigation after save/publish is instant
     revalidatePath("/blog");

@@ -1,9 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { verifyPassword, createSession } from "@/lib/auth";
+import { verifyPassword, createSession, SESSION_COOKIE, SESSION_MAX_AGE } from "@/lib/auth";
 import { checkRateLimit } from "@/lib/rate-limit";
-
-const SESSION_COOKIE = "admin_session";
-const SESSION_MAX_AGE = 60 * 60 * 24 * 7; // 7 days
 
 export async function POST(request: NextRequest) {
   const ip = request.headers.get("x-forwarded-for") ?? "unknown";
