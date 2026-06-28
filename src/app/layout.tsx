@@ -14,9 +14,22 @@ const galmuri = localFont({
   variable: "--font-galmuri",
 });
 
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://joodev.vercel.app";
+
 export const metadata: Metadata = {
-  title: "JooDev Blog",
-  description: "A personal tech blog",
+  title: {
+    default: "JooDev",
+    template: "%s | JooDev",
+  },
+  description: "개발하면서 배운 것들, 삽질한 경험들, 그리고 고양이처럼 우아한 코드에 대한 이야기.",
+  openGraph: {
+    title: "JooDev",
+    description: "개발하면서 배운 것들, 삽질한 경험들, 그리고 고양이처럼 우아한 코드에 대한 이야기.",
+    url: siteUrl,
+    siteName: "JooDev",
+    locale: "ko_KR",
+    type: "website",
+  },
   icons: {
     icon: "/favicon.png",
     apple: "/favicon.png",
