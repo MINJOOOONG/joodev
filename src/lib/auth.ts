@@ -1,5 +1,6 @@
 import { SignJWT, jwtVerify } from "jose";
 import { cookies } from "next/headers";
+import bcrypt from "bcryptjs";
 
 export const SESSION_COOKIE = "admin_session";
 export const SESSION_MAX_AGE = 60 * 60 * 24 * 7; // 7 days
@@ -11,9 +12,9 @@ export function getSecret() {
 }
 
 export function verifyPassword(password: string): boolean {
-  const adminPassword = process.env.ADMIN_PASSWORD;
-  if (!adminPassword) throw new Error("ADMIN_PASSWORD is not set");
-  return password === adminPassword;
+  const hash = process.env.ADMIN_PASSWORD_HASH;
+  if (!hash) throw new Error("ADMIN_PASSWORD_HASH is not set");
+  return bcrypt.compareSync(password, hash);
 }
 
 export async function createSession(): Promise<string> {
