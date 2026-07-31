@@ -67,18 +67,18 @@
 
 ## 현재 에디터 확장 목록
 
-| 확장 | 용도 | 에디터 | 렌더러 |
-|------|------|--------|--------|
-| StarterKit | 기본 (bold, italic, headings 등) | O | O |
-| CodeBlockLowlight | 코드 블록 + 하이라이팅 + 언어 뱃지 | O | O |
-| Underline | 밑줄 | O | O |
-| Link | 하이퍼링크 | O | O |
-| Image | 이미지 삽입 | O | O |
-| ResizableImage | 이미지 리사이즈 + 캡션 + 갤러리 그룹핑 | O | - |
-| Youtube | YouTube 임베드 (최대 5개) | O | O |
-| TextStyle | 텍스트 스타일 기반 | O | O |
-| Color | 글자 색상 | O | O |
-| FontSize | 글자 크기 (커스텀) | O | - |
-| LineHeight | 줄 간격 (커스텀) | O | - |
-| Placeholder | 빈 상태 안내 텍스트 | O | - |
-| Mermaid | 다이어그램 렌더링 | - | O (DOM) |
+| 확장               | 용도                                  | 에디터 | 렌더러  |
+|--------------------|---------------------------------------|--------|---------|
+| StarterKit         | 기본 (bold, italic, headings 등)      | O      | O       |
+| CodeBlockLowlight  | 코드 블록 + 하이라이팅 + 언어 뱃지    | O      | O       |
+| Underline          | 밑줄                                  | O      | O       |
+| Link               | 하이퍼링크                            | O      | O       |
+| Image              | 이미지 삽입                           | O      | O       |
+| ResizableImage     | 이미지 리사이즈 + 캡션 + 갤러리 그룹핑 | O      | -       |
+| Youtube            | YouTube 임베드 (최대 5개)             | O      | O       |
+| TextStyle          | 텍스트 스타일 기반                    | O      | O       |
+| Color              | 글자 색상                             | O      | O       |
+| FontSize           | 글자 크기 (커스텀)                    | O      | -       |
+| LineHeight         | 줄 간격 (커스텀)                      | O      | -       |
+| Placeholder        | 빈 상태 안내 텍스트                   | O      | -       |
+| Mermaid            | 다이어그램 렌더링                     | -      | O (DOM) |
