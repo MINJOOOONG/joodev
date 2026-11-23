@@ -1,20 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
-import { revalidatePath } from "next/cache";
-import { jwtVerify } from "jose";
 import { prisma } from "@/lib/db";
 import { generateSlug } from "@/lib/utils";
-import { getSecret, SESSION_COOKIE } from "@/lib/auth";
+import { isAdminRequest } from "@/lib/session";
+import { revalidatePostPages } from "@/lib/revalidate-posts";
 
 // GET /api/posts - list all posts (admin: all, public: published only)
 export async function GET(request: NextRequest) {
-  let isAdmin = false;
-  const token = request.cookies.get(SESSION_COOKIE)?.value;
-  if (token) {
-    try {
-      await jwtVerify(token, getSecret());
-      isAdmin = true;
-    } catch {}
-  }
+  const isAdmin = await isAdminRequest(request);
 
   const posts = await prisma.post.findMany({
     where: isAdmin ? {} : { status: "PUBLISHED" },
@@ -66,11 +58,7 @@ export async function POST(request: NextRequest) {
       include: { tags: true },
     });
 
-    // Revalidate blog pages so navigation after publish is instant
-    revalidatePath("/blog");
-    if (post.slug) {
-      revalidatePath(`/blog/${post.slug}`);
-    }
+    revalidatePostPages(post.slug);
 
     return NextResponse.json(post, { status: 201 });
   } catch (err) {

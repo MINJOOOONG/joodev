@@ -1,18 +1,20 @@
 import { NextRequest, NextResponse } from "next/server";
-import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/db";
 import { generateSlug } from "@/lib/utils";
+import { isAdminRequest } from "@/lib/session";
+import { revalidatePostPages } from "@/lib/revalidate-posts";
 
 interface Context {
   params: Promise<{ id: string }>;
 }
 
 // GET /api/posts/[id]
-export async function GET(_request: NextRequest, context: Context) {
+export async function GET(request: NextRequest, context: Context) {
   const { id } = await context.params;
+  const isAdmin = await isAdminRequest(request);
 
   const post = await prisma.post.findUnique({
-    where: { id },
+    where: isAdmin ? { id } : { id, status: "PUBLISHED" },
     include: { tags: { select: { id: true, name: true } } },
   });
 
@@ -80,15 +82,7 @@ export async function PUT(request: NextRequest, context: Context) {
       }),
     ]);
 
-    // Revalidate blog pages so navigation after save/publish is instant
-    revalidatePath("/blog");
-    if (post.slug) {
-      revalidatePath(`/blog/${post.slug}`);
-    }
-    // If slug changed, also revalidate old slug
-    if (existing.slug && existing.slug !== post.slug) {
-      revalidatePath(`/blog/${existing.slug}`);
-    }
+    revalidatePostPages(post.slug, existing.slug);
 
     return NextResponse.json(post);
   } catch (err) {
@@ -108,11 +102,7 @@ export async function DELETE(_request: NextRequest, context: Context) {
     const post = await prisma.post.findUnique({ where: { id }, select: { slug: true } });
     await prisma.post.delete({ where: { id } });
 
-    // ISR 캐시 무효화: 목록 + 삭제된 글 상세 페이지
-    revalidatePath("/blog");
-    if (post?.slug) {
-      revalidatePath(`/blog/${post.slug}`);
-    }
+    revalidatePostPages(post?.slug);
 
     return NextResponse.json({ success: true });
   } catch {

@@ -6,6 +6,14 @@ const SOUND_URL = "/sounds/민쥬쓰코딩쏭.mp3";
 const VOLUME = 0.3;
 const STORAGE_KEY = "musicEnabled";
 
+function savePreference(enabled: boolean) {
+  try {
+    localStorage.setItem(STORAGE_KEY, String(enabled));
+  } catch {
+    // Playback still works when browser storage is unavailable.
+  }
+}
+
 export function useMusic() {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const [playing, setPlaying] = useState(false);
@@ -15,47 +23,51 @@ export function useMusic() {
     const audio = new Audio(SOUND_URL);
     audio.loop = true;
     audio.volume = VOLUME;
-    audio.preload = "auto";
+    audio.preload = "none";
     audioRef.current = audio;
     setReady(true);
 
-    // 사용자가 명시적으로 정지한 적이 있으면 자동재생 안 함
-    const stored = localStorage.getItem(STORAGE_KEY);
-    if (stored === "false") return;
+    const syncPlaying = () => setPlaying(!audio.paused);
+    const onError = () => setPlaying(false);
+    audio.addEventListener("play", syncPlaying);
+    audio.addEventListener("pause", syncPlaying);
+    audio.addEventListener("error", onError);
 
-    // 자동 재생 시도
-    audio
-      .play()
-      .then(() => {
-        setPlaying(true);
-        localStorage.setItem(STORAGE_KEY, "true");
-      })
-      .catch(() => {
-        // 브라우저 정책으로 차단됨 — 사용자 인터랙션 대기
-        setPlaying(false);
-      });
+    let shouldPlay = false;
+    try {
+      shouldPlay = localStorage.getItem(STORAGE_KEY) === "true";
+    } catch {
+      // Default to silence if no preference can be read.
+    }
+    if (shouldPlay) void audio.play().catch(() => {});
 
     return () => {
+      audio.removeEventListener("play", syncPlaying);
+      audio.removeEventListener("pause", syncPlaying);
+      audio.removeEventListener("error", onError);
       audio.pause();
       audio.src = "";
+      if (audioRef.current === audio) audioRef.current = null;
     };
   }, []);
 
-  const toggle = useCallback(() => {
+  const toggle = useCallback(async () => {
     const audio = audioRef.current;
     if (!audio) return;
 
-    if (playing) {
+    if (!audio.paused) {
       audio.pause();
-      setPlaying(false);
-      localStorage.setItem(STORAGE_KEY, "false");
-    } else {
-      audio.play().then(() => {
-        setPlaying(true);
-        localStorage.setItem(STORAGE_KEY, "true");
-      });
+      savePreference(false);
+      return;
     }
-  }, [playing]);
+
+    try {
+      await audio.play();
+      savePreference(true);
+    } catch {
+      if (audioRef.current === audio) setPlaying(false);
+    }
+  }, []);
 
   return { playing, toggle, ready };
 }

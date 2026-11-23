@@ -22,7 +22,7 @@ interface BlogListClientProps {
   initialCategory: string | null;
 }
 
-const DAILY_CATEGORY = DAILY_CATEGORY;
+const DAILY_CATEGORY = "Daily";
 
 export default function BlogListClient({ posts, categories, initialCategory }: BlogListClientProps) {
   const [activeCategory, setActiveCategory] = useState<string | null>(

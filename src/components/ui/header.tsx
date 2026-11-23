@@ -5,13 +5,11 @@ import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { PixelCat } from "./cat-icon";
 import { useTheme } from "./theme-provider";
-import { useMeow } from "@/hooks/use-meow";
 import { useMusic } from "@/hooks/use-music";
 
 export default function Header() {
   const { theme, toggleTheme } = useTheme();
-  const meow = useMeow();
-  const { playing, toggle: toggleMusic } = useMusic();
+  const { playing, toggle: toggleMusic, ready } = useMusic();
   const pathname = usePathname();
 
   return (
@@ -19,30 +17,11 @@ export default function Header() {
       <header className="sticky top-0 z-40 bg-[rgb(var(--color-bg)/0.85)] backdrop-blur-xl">
         <div className="mx-auto max-w-5xl px-4 sm:px-6">
           <div className="flex h-16 items-center justify-between">
-            <Link href="/home" className="group flex items-center gap-2.5">
-              <div
-                className="relative flex items-center justify-center cursor-pointer"
-                onClick={(e) => { e.preventDefault(); toggleMusic(); meow(); }}
-                role="button"
-                aria-label={playing ? "배경음악 정지" : "배경음악 재생"}
-              >
-                <div className="transition-transform duration-300 group-hover:scale-110">
-                  <PixelCat size={36} />
-                </div>
-                {/* 음악 상태 말풍선 */}
-                <span
-                  className={cn(
-                    "absolute -top-2.5 left-1/2 -translate-x-1/2 rounded-full px-2 py-0.5 text-[9px] font-bold leading-none whitespace-nowrap transition-all duration-300 hover:scale-110",
-                    "after:absolute after:top-full after:left-1/2 after:-translate-x-1/2 after:border-[3px] after:border-transparent",
-                    playing
-                      ? "bg-accent-purple text-white shadow-glow-sm after:border-t-accent-purple"
-                      : "bg-surface-raised text-content-3 border border-surface-border after:border-t-surface-raised"
-                  )}
-                >
-                  {playing ? "Stop" : "Play"}
-                </span>
-              </div>
-              <span className="text-lg font-extrabold tracking-tight text-heading">
+            <Link href="/home" className="group flex items-center gap-2" aria-label="JooDev 홈">
+              <span className="transition-transform duration-300 group-hover:scale-110" aria-hidden="true">
+                <PixelCat size={32} />
+              </span>
+              <span className="text-base font-extrabold tracking-tight text-heading sm:text-lg">
                 Joo<span className="text-accent-purple">Dev</span>
               </span>
             </Link>
@@ -56,7 +35,7 @@ export default function Header() {
                     key={href}
                     href={href}
                     className={cn(
-                      "rounded-lg px-3 py-1.5 text-sm font-medium transition-colors duration-200",
+                      "rounded-lg px-2 py-1.5 text-sm font-medium transition-colors duration-200 sm:px-3",
                       isActive
                         ? "text-accent-purple bg-accent-purple/[0.08]"
                         : "text-content-muted hover:text-content-2 hover:bg-surface-raised/80"
@@ -69,7 +48,22 @@ export default function Header() {
             </nav>
             <div className="flex items-center gap-1.5">
               <button
+                type="button"
+                onClick={() => void toggleMusic()}
+                disabled={!ready}
+                aria-label={playing ? "배경음악 끄기" : "배경음악 켜기"}
+                aria-pressed={playing}
+                className={cn(
+                  "min-h-10 rounded-lg px-2 text-sm font-semibold transition-colors disabled:opacity-50",
+                  playing ? "bg-accent-purple/10 text-accent-purple" : "text-content-3 hover:bg-surface-raised"
+                )}
+              >
+                BGM<span className="hidden sm:inline"> {playing ? "ON" : "OFF"}</span>
+              </button>
+              <button
+                type="button"
                 onClick={toggleTheme}
+                aria-label={theme === "dark" ? "라이트 모드" : "다크 모드"}
                 className="rounded-lg p-2 text-content-muted hover:bg-surface-raised/80 hover:text-content-2 transition-colors duration-200"
                 title={theme === "dark" ? "라이트 모드" : "다크 모드"}
               >
