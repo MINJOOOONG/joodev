@@ -140,6 +140,11 @@
     @apply antialiased font-sans;
   }
 
+  a:focus-visible, button:focus-visible {
+    outline: 2px solid rgb(var(--color-accent));
+    outline-offset: 4px;
+  }
+
   /* Apply Mona12 to body and form elements only (NOT *) */
   body, button, input, select, textarea {
     font-family: var(--font-mona12), system-ui, sans-serif;
@@ -714,10 +719,19 @@
 
 /* PixelCat light mode visibility - subtle pixel-art outline */
 [data-theme="light"] .pixel-cat-light {
-  filter: drop-shadow(1px 0 0 rgba(0, 0, 0, 0.15))
-          drop-shadow(-1px 0 0 rgba(0, 0, 0, 0.15))
-          drop-shadow(0 1px 0 rgba(0, 0, 0, 0.15))
-          drop-shadow(0 -1px 0 rgba(0, 0, 0, 0.15));
+  filter: drop-shadow(1px 0 0 rgba(52, 42, 82, 0.4))
+          drop-shadow(-1px 0 0 rgba(52, 42, 82, 0.4))
+          drop-shadow(0 1px 0 rgba(52, 42, 82, 0.4))
+          drop-shadow(0 -1px 0 rgba(52, 42, 82, 0.4));
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }
 
 /* ── Explore page: neon node hover effects ── */

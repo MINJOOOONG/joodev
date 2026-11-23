@@ -1,15 +1,9 @@
 import { SignJWT, jwtVerify } from "jose";
 import { cookies } from "next/headers";
 import bcrypt from "bcryptjs";
+import { getSecret, SESSION_COOKIE, SESSION_MAX_AGE } from "./session";
 
-export const SESSION_COOKIE = "admin_session";
-export const SESSION_MAX_AGE = 60 * 60 * 24 * 7; // 7 days
-
-export function getSecret() {
-  const secret = process.env.SESSION_SECRET;
-  if (!secret) throw new Error("SESSION_SECRET is not set");
-  return new TextEncoder().encode(secret);
-}
+export { getSecret, SESSION_COOKIE, SESSION_MAX_AGE } from "./session";
 
 export function verifyPassword(password: string): boolean {
   const hash = process.env.ADMIN_PASSWORD_HASH;

@@ -1,6 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import { PixelCat } from "@/components/ui/cat-icon";
 
@@ -205,9 +206,6 @@ function IntroPawFall() {
 
 export default function IntroPage() {
   const router = useRouter();
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => setMounted(true), []);
 
   // prefetch target route on mount for instant navigation
   useEffect(() => {
@@ -218,11 +216,8 @@ export default function IntroPage() {
     const meow = new Audio("/sounds/meowsound.wav");
     meow.volume = 0.35;
     meow.play().catch(() => {});
-    localStorage.setItem("musicEnabled", "true");
     router.push("/home");
   }, [router]);
-
-  if (!mounted) return <div className="min-h-screen" />;
 
   return (
     <div className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden">
@@ -263,7 +258,8 @@ export default function IntroPage() {
             <PixelRug />
             <button
               onClick={handleClick}
-              className="relative cursor-pointer p-2 transition-transform duration-300 hover:scale-110 active:scale-95 focus:outline-none"
+              type="button"
+              className="relative cursor-pointer rounded-2xl p-2 transition-transform duration-300 hover:scale-110 active:scale-95"
               aria-label="블로그 입장"
             >
               <div className="animate-float-slow">
@@ -277,9 +273,11 @@ export default function IntroPage() {
           </div>
         </div>
 
-        {/* click the cat — 러그 아래 충분한 여백 */}
-        <p className="mt-16 text-xs text-content-faint font-mono animate-pulse-soft">
-          click the cat
+        <Link href="/home" className="btn-primary mt-12 min-h-12 px-8 text-base">
+          블로그 입장
+        </Link>
+        <p className="mt-4 text-sm text-content-3">
+          고양이를 눌러도 입장할 수 있어요.
         </p>
       </div>
     </div>
