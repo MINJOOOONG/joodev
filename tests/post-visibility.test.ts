@@ -121,6 +121,30 @@ test("admin lists include drafts while non-admin sessions do not", async () => {
   assert.equal((await reader.json()).length, 1);
 });
 
+test("explicit admin reads require a valid session instead of silently falling back to public data", async () => {
+  assert.equal((await listPosts(request("/api/posts?scope=admin"))).status, 401);
+  assert.equal((await getPost(request(`/api/posts/${published.id}?scope=admin`), { params: Promise.resolve({ id: published.id }) })).status, 401);
+  assert.equal((await listPosts(request("/api/posts?scope=admin", await token()))).status, 200);
+});
+
+test("database read failures return recoverable JSON errors without internal details", async () => {
+  const findMany = prisma.post.findMany;
+  const findUnique = prisma.post.findUnique;
+  try {
+    prisma.post.findMany = (async () => { throw new Error("internal-test-database-detail"); }) as unknown as typeof prisma.post.findMany;
+    prisma.post.findUnique = (async () => { throw new Error("internal-test-database-detail"); }) as unknown as typeof prisma.post.findUnique;
+    const list = await listPosts(request("/api/posts"));
+    const article = await readPost(published.id);
+    assert.equal(list.status, 503);
+    assert.equal(article.status, 503);
+    assert.doesNotMatch(JSON.stringify(await list.json()), /internal-test-database-detail/);
+    assert.doesNotMatch(JSON.stringify(await article.json()), /internal-test-database-detail/);
+  } finally {
+    prisma.post.findMany = findMany;
+    prisma.post.findUnique = findUnique;
+  }
+});
+
 test("authentication checks reject signed tokens without the admin role", async () => {
   const response = await checkAuth(request("/api/auth/check", await token("reader")));
   assert.deepEqual(await response.json(), { authenticated: false });

@@ -7,14 +7,21 @@ import { revalidatePostPages } from "@/lib/revalidate-posts";
 // GET /api/posts - list all posts (admin: all, public: published only)
 export async function GET(request: NextRequest) {
   const isAdmin = await isAdminRequest(request);
+  if (request.nextUrl.searchParams.get("scope") === "admin" && !isAdmin) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
 
-  const posts = await prisma.post.findMany({
-    where: isAdmin ? {} : { status: "PUBLISHED" },
-    orderBy: { updatedAt: "desc" },
-    include: { tags: { select: { name: true } } },
-  });
+  try {
+    const posts = await prisma.post.findMany({
+      where: isAdmin ? {} : { status: "PUBLISHED" },
+      orderBy: { updatedAt: "desc" },
+      include: { tags: { select: { name: true } } },
+    });
 
-  return NextResponse.json(posts);
+    return NextResponse.json(posts);
+  } catch {
+    return NextResponse.json({ error: "게시글 목록을 불러오지 못했습니다." }, { status: 503 });
+  }
 }
 
 // POST /api/posts - create a new post

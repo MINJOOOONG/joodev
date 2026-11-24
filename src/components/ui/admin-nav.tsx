@@ -1,19 +1,34 @@
 "use client";
 
-import Link from "next/link";
+import { useState } from "react";
+import { GuardedLink as Link, useConfirmNavigation } from "./navigation-guard";
 import { usePathname, useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { CatFace } from "./cat-icon";
 import { useTheme } from "./theme-provider";
+import { useToast } from "./toast";
 
 export default function AdminNav() {
   const router = useRouter();
   const pathname = usePathname();
   const { theme, toggleTheme } = useTheme();
+  const confirmLeave = useConfirmNavigation();
+  const { toast } = useToast();
+  const [loggingOut, setLoggingOut] = useState(false);
 
   async function handleLogout() {
-    await fetch("/api/auth/login", { method: "DELETE" });
-    router.push("/admin/login");
+    if (loggingOut || !confirmLeave()) return;
+    setLoggingOut(true);
+    try {
+      const res = await fetch("/api/auth/login", { method: "DELETE" });
+      if (!res.ok) throw new Error("Logout failed");
+      router.push("/admin/login");
+      router.refresh();
+    } catch {
+      toast("로그아웃에 실패했습니다. 다시 시도해주세요.", "error");
+    } finally {
+      setLoggingOut(false);
+    }
   }
 
   return (
@@ -81,9 +96,10 @@ export default function AdminNav() {
             </Link>
             <button
               onClick={handleLogout}
+              disabled={loggingOut}
               className="rounded-xl px-3 py-1.5 text-sm font-medium text-red-400 hover:bg-red-500/10 hover:text-red-300 transition-all duration-200"
             >
-              로그아웃
+              {loggingOut ? "로그아웃 중..." : "로그아웃"}
             </button>
           </div>
         </div>

@@ -5,42 +5,48 @@ import Link from "next/link";
 import AdminNav from "@/components/ui/admin-nav";
 import { formatDate } from "@/lib/utils";
 import { SleepingCat } from "@/components/ui/cat-icon";
-
-interface Post {
-  id: string;
-  title: string;
-  slug: string;
-  category: string;
-  status: "DRAFT" | "PUBLISHED";
-  publishedAt: string | null;
-  createdAt: string;
-  updatedAt: string;
-  tags: { name: string }[];
-}
+import { useToast } from "@/components/ui/toast";
+import AdminLoadError from "@/components/ui/admin-load-error";
+import { requestAdmin, isAdminPostList, AdminApiError, type AdminPostSummary } from "@/lib/admin-api";
 
 export default function AdminPostsPage() {
-  const [posts, setPosts] = useState<Post[]>([]);
+  const [posts, setPosts] = useState<AdminPostSummary[]>([]);
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<AdminApiError | null>(null);
+  const [reloadKey, setReloadKey] = useState(0);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+  const { toast } = useToast();
 
   useEffect(() => {
-    fetchPosts();
-  }, []);
-
-  async function fetchPosts() {
-    setLoading(true);
-    const res = await fetch("/api/posts");
-    const data = await res.json();
-    setPosts(data);
-    setLoading(false);
-  }
+    const controller = new AbortController();
+    async function fetchPosts() {
+      setLoading(true);
+      setError(null);
+      try {
+        const data = await requestAdmin("/api/posts?scope=admin", { signal: controller.signal }, isAdminPostList);
+        if (!controller.signal.aborted) setPosts(data);
+      } catch (error) {
+        if (!controller.signal.aborted) setError(error as AdminApiError);
+      } finally {
+        if (!controller.signal.aborted) setLoading(false);
+      }
+    }
+    void fetchPosts();
+    return () => controller.abort();
+  }, [reloadKey]);
 
   async function handleDelete(id: string, title: string) {
-    if (!confirm(`"${title}" 게시글을 삭제하시겠습니까?`)) return;
-
-    const res = await fetch(`/api/posts/${id}`, { method: "DELETE" });
-    if (res.ok) {
+    if (deletingId || !confirm(`"${title}" 게시글을 삭제하시겠습니까?`)) return;
+    setDeletingId(id);
+    try {
+      await requestAdmin(`/api/posts/${id}`, { method: "DELETE" });
       setPosts((prev) => prev.filter((p) => p.id !== id));
+      toast("삭제되었습니다.", "success");
+    } catch (error) {
+      toast((error as AdminApiError).message, "error");
+    } finally {
+      setDeletingId(null);
     }
   }
 
@@ -97,6 +103,8 @@ export default function AdminPostsPage() {
             </svg>
             로딩 중...
           </div>
+        ) : error ? (
+          <AdminLoadError error={error} onRetry={() => setReloadKey((key) => key + 1)} />
         ) : filtered.length === 0 ? (
           <div className="card py-16 text-center">
             <SleepingCat className="mx-auto mb-4" />
@@ -181,9 +189,10 @@ export default function AdminPostsPage() {
                         </Link>
                         <button
                           onClick={() => handleDelete(post.id, post.title)}
+                          disabled={deletingId !== null}
                           className="btn-danger"
                         >
-                          삭제
+                          {deletingId === post.id ? "삭제 중..." : "삭제"}
                         </button>
                       </div>
                     </td>

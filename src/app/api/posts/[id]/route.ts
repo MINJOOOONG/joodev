@@ -12,17 +12,24 @@ interface Context {
 export async function GET(request: NextRequest, context: Context) {
   const { id } = await context.params;
   const isAdmin = await isAdminRequest(request);
-
-  const post = await prisma.post.findUnique({
-    where: isAdmin ? { id } : { id, status: "PUBLISHED" },
-    include: { tags: { select: { id: true, name: true } } },
-  });
-
-  if (!post) {
-    return NextResponse.json({ error: "Post not found" }, { status: 404 });
+  if (request.nextUrl.searchParams.get("scope") === "admin" && !isAdmin) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  return NextResponse.json(post);
+  try {
+    const post = await prisma.post.findUnique({
+      where: isAdmin ? { id } : { id, status: "PUBLISHED" },
+      include: { tags: { select: { id: true, name: true } } },
+    });
+
+    if (!post) {
+      return NextResponse.json({ error: "Post not found" }, { status: 404 });
+    }
+
+    return NextResponse.json(post);
+  } catch {
+    return NextResponse.json({ error: "게시글을 불러오지 못했습니다." }, { status: 503 });
+  }
 }
 
 // PUT /api/posts/[id]
@@ -45,10 +52,10 @@ export async function PUT(request: NextRequest, context: Context) {
       return NextResponse.json({ error: "Post not found" }, { status: 404 });
     }
 
-    // Regenerate slug if title changed or slug is empty
+    // A published URL is permanent, including when its title is edited.
     let slug = existing.slug;
-    if ((title && title !== existing.title) || !existing.slug) {
-      slug = generateSlug(title);
+    if (!slug) {
+      slug = generateSlug(title || existing.title);
       const slugExists = await prisma.post.findFirst({
         where: { slug, id: { not: id } },
       });
