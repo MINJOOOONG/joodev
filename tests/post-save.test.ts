@@ -80,6 +80,15 @@ test("ordinary Save keeps an unpublished article as a draft", async () => {
   assert.equal(post.publishedAt, null);
 });
 
+test("renaming a published article preserves its shared URL and original publication date", async () => {
+  const response = await PUT(await request({ title: "A completely revised title" }), context);
+  assert.equal(response.status, 200);
+  const post = await response.json();
+  assert.equal(post.title, "A completely revised title");
+  assert.equal(post.slug, initial.slug);
+  assert.equal(post.publishedAt, publishedAt.toISOString());
+});
+
 test("explicit Publish sets the initial publication date only once", async () => {
   stored.status = "DRAFT";
   stored.publishedAt = null;

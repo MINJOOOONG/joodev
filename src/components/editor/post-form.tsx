@@ -1,12 +1,13 @@
 "use client";
 
-import { useState, useCallback, useRef, useEffect } from "react";
+import { useState, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
 import Image from "next/image";
 import type { JSONContent } from "@tiptap/react";
 import { useToast } from "@/components/ui/toast";
 import { uploadMedia } from "@/lib/upload-client";
+import { useNavigationGuard } from "@/components/ui/navigation-guard";
 
 const TipTapEditor = dynamic(() => import("./tiptap-editor"), {
   ssr: false,
@@ -71,67 +72,15 @@ export default function PostForm({ initialData }: PostFormProps) {
   const [editorUploading, setEditorUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const isEdit = !!initialData?.id;
-
-  // Dirty state tracking
-  const [isDirty, setIsDirty] = useState(false);
-  const lastSavedRef = useRef({
-    title: initialData?.title ?? "",
-    excerpt: initialData?.excerpt ?? "",
-    category: initialData?.category ?? "Uncategorized",
-    tags: initialData?.tags.map((t) => t.name).join(", ") ?? "",
-    images: initialData?.images ?? [],
-    coverUrl: initialData?.coverUrl ?? "",
-    startDate: initialData?.startDate ? initialData.startDate.slice(0, 10) : "",
-    endDate: initialData?.endDate ? initialData.endDate.slice(0, 10) : "",
-  });
-
-  const imagesDirtyRef = useRef(false);
-  const prevImagesRef = useRef(images);
-  if (prevImagesRef.current !== images) {
-    imagesDirtyRef.current =
-      images.length !== lastSavedRef.current.images.length ||
-      images.some((img, i) => img !== lastSavedRef.current.images[i]);
-    prevImagesRef.current = images;
-  }
-
-  useEffect(() => {
-    const saved = lastSavedRef.current;
-    const dirty =
-      title !== saved.title ||
-      excerpt !== saved.excerpt ||
-      category !== saved.category ||
-      tags !== saved.tags ||
-      coverUrl !== saved.coverUrl ||
-      startDate !== saved.startDate ||
-      endDate !== saved.endDate ||
-      imagesDirtyRef.current;
-    setIsDirty(dirty);
-  }, [title, excerpt, category, tags, images, coverUrl, startDate, endDate]);
-
-  const contentDirtyRef = useRef(false);
-  const handleContentChange = useCallback((json: JSONContent) => {
-    setContent(json);
-    contentDirtyRef.current = true;
-    setIsDirty(true);
-  }, []);
-
-  useEffect(() => {
-    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
-      if (isDirty || contentDirtyRef.current) {
-        e.preventDefault();
-      }
-    };
-    window.addEventListener("beforeunload", handleBeforeUnload);
-    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
-  }, [isDirty]);
-
-  const markClean = useCallback(() => {
-    lastSavedRef.current = { title, excerpt, category, tags, images, coverUrl, startDate, endDate };
-    contentDirtyRef.current = false;
-    imagesDirtyRef.current = false;
-    setIsDirty(false);
-  }, [title, excerpt, category, tags, images, coverUrl, startDate, endDate]);
+  const [postId, setPostId] = useState(initialData?.id);
+  const isEdit = !!postId;
+  const snapshot = JSON.stringify({ title, excerpt, category, tags, images, coverUrl, startDate, endDate, content });
+  const [savedSnapshot, setSavedSnapshot] = useState(snapshot);
+  const latestSnapshot = useRef(snapshot);
+  latestSnapshot.current = snapshot;
+  const isDirty = snapshot !== savedSnapshot;
+  useNavigationGuard(isDirty || saving || uploading || editorUploading);
+  const handleContentChange = useCallback((json: JSONContent) => setContent(json), []);
 
   const handleSave = useCallback(
     async (publish: boolean) => {
@@ -155,6 +104,7 @@ export default function PostForm({ initialData }: PostFormProps) {
       }
 
       setSaving(true);
+      const submittedSnapshot = snapshot;
 
       try {
         const tagList = Array.from(new Set(tags
@@ -178,7 +128,7 @@ export default function PostForm({ initialData }: PostFormProps) {
           endDate: endDate || null,
         };
 
-        const url = isEdit ? `/api/posts/${initialData!.id}` : "/api/posts";
+        const url = postId ? `/api/posts/${postId}` : "/api/posts";
         const method = isEdit ? "PUT" : "POST";
 
         const res = await fetch(url, {
@@ -194,19 +144,23 @@ export default function PostForm({ initialData }: PostFormProps) {
         }
 
         const data = await res.json();
+        setPostId(data.id);
+        setSavedSnapshot(submittedSnapshot);
+
+        // Edits made while the request was pending still need to be saved.
+        if (latestSnapshot.current !== submittedSnapshot) {
+          toast("저장되었습니다. 방금 추가한 변경사항은 한 번 더 저장해주세요.", "info");
+          return;
+        }
 
         // Navigate first for instant feel, then clean up state
         if (publish && data.slug) {
           toast("글이 발행되었습니다.", "success");
-          // Mark clean before push to prevent beforeunload warning
-          markClean();
           router.push(`/blog/${data.slug}`);
         } else if (!isEdit) {
-          markClean();
-          router.push(`/admin/posts/${data.id}/edit`);
+          router.replace(`/admin/posts/${data.id}/edit`);
           toast("저장되었습니다.", "success");
         } else {
-          markClean();
           toast("저장되었습니다.", "success");
         }
       } catch {
@@ -215,7 +169,7 @@ export default function PostForm({ initialData }: PostFormProps) {
         setSaving(false);
       }
     },
-    [title, excerpt, content, coverUrl, images, tags, startDate, endDate, isEdit, initialData, router, toast, markClean, category]
+    [title, excerpt, content, coverUrl, images, tags, startDate, endDate, isEdit, postId, router, toast, category, snapshot]
   );
 
   const handleImageUpload = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
