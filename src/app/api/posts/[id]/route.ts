@@ -27,11 +27,18 @@ export async function GET(request: NextRequest, context: Context) {
 
 // PUT /api/posts/[id]
 export async function PUT(request: NextRequest, context: Context) {
+  if (!(await isAdminRequest(request))) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
   const { id } = await context.params;
 
   try {
     const body = await request.json();
     const { title, excerpt, contentJson, coverUrl, images, status, tags, category, startDate, endDate } = body;
+
+    if (tags !== undefined && (!Array.isArray(tags) || tags.some((tag) => typeof tag !== "string"))) {
+      return NextResponse.json({ error: "Tags must be a list of names" }, { status: 400 });
+    }
 
     const existing = await prisma.post.findUnique({ where: { id } });
     if (!existing) {
@@ -58,11 +65,13 @@ export async function PUT(request: NextRequest, context: Context) {
       publishedAt = null;
     }
 
-    const tagData = (tags as string[] | undefined)?.map((name: string) => ({ name })) ?? [];
+    const tagData = tags === undefined ? undefined
+      : Array.from(new Set((tags as string[]).map((name) => name.trim()).filter(Boolean)))
+        .map((name) => ({ name }));
 
-    const [, post] = await prisma.$transaction([
-      prisma.tag.deleteMany({ where: { postId: id } }),
-      prisma.post.update({
+    const post = await prisma.$transaction(async (tx) => {
+      if (tagData !== undefined) await tx.tag.deleteMany({ where: { postId: id } });
+      return tx.post.update({
         where: { id },
         data: {
           title: title ?? existing.title,
@@ -76,11 +85,11 @@ export async function PUT(request: NextRequest, context: Context) {
           publishedAt,
           startDate: startDate !== undefined ? (startDate ? new Date(startDate) : null) : existing.startDate,
           endDate: endDate !== undefined ? (endDate ? new Date(endDate) : null) : existing.endDate,
-          tags: { create: tagData },
+          tags: tagData === undefined ? undefined : { create: tagData },
         },
         include: { tags: true },
-      }),
-    ]);
+      });
+    });
 
     revalidatePostPages(post.slug, existing.slug);
 
@@ -95,7 +104,10 @@ export async function PUT(request: NextRequest, context: Context) {
 }
 
 // DELETE /api/posts/[id]
-export async function DELETE(_request: NextRequest, context: Context) {
+export async function DELETE(request: NextRequest, context: Context) {
+  if (!(await isAdminRequest(request))) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
   const { id } = await context.params;
 
   try {

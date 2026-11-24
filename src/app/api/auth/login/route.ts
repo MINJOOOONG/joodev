@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { verifyPassword, createSession, SESSION_COOKIE, SESSION_MAX_AGE } from "@/lib/auth";
+import { verifyPassword, AdminAuthConfigurationError, createSession, SESSION_COOKIE, SESSION_MAX_AGE } from "@/lib/auth";
 import { checkRateLimit } from "@/lib/rate-limit";
 
 export async function POST(request: NextRequest) {
@@ -29,10 +29,10 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const valid = verifyPassword(password);
+    const valid = await verifyPassword(password);
     if (!valid) {
       return NextResponse.json(
-        { error: "Invalid password" },
+        { error: "비밀번호가 일치하지 않습니다." },
         {
           status: 401,
           headers: { "X-RateLimit-Remaining": String(remaining) },
@@ -52,7 +52,17 @@ export async function POST(request: NextRequest) {
     });
 
     return response;
-  } catch {
+  } catch (error) {
+    if (error instanceof SyntaxError) {
+      return NextResponse.json({ error: "잘못된 요청입니다." }, { status: 400 });
+    }
+    if (error instanceof AdminAuthConfigurationError) {
+      console.error(error.message);
+      return NextResponse.json(
+        { error: "현재 로그인을 사용할 수 없습니다. 잠시 후 다시 시도해 주세요." },
+        { status: 503 }
+      );
+    }
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 }

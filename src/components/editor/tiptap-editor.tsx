@@ -4,9 +4,10 @@ import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import Underline from "@tiptap/extension-underline";
 import LinkExt from "@tiptap/extension-link";
+import { uploadMedia } from "@/lib/upload-client";
 import { ResizableImage } from "./resizable-image";
 import Youtube from "@tiptap/extension-youtube";
-import TextStyle from "@tiptap/extension-text-style";
+import { TextStyle } from "@tiptap/extension-text-style";
 import Color from "@tiptap/extension-color";
 import Placeholder from "@tiptap/extension-placeholder";
 import CodeBlockLowlight from "@tiptap/extension-code-block-lowlight";
@@ -37,11 +38,13 @@ lowlight.register("bash", bash);
 interface TipTapEditorProps {
   content?: JSONContent;
   onChange?: (json: JSONContent) => void;
+  onUploadingChange?: (uploading: boolean) => void;
 }
 
 export default function TipTapEditor({
   content,
   onChange,
+  onUploadingChange,
 }: TipTapEditorProps) {
   const { toast } = useToast();
   const [uploadProgress, setUploadProgress] = useState<number | null>(null);
@@ -53,6 +56,9 @@ export default function TipTapEditor({
     extensions: [
       StarterKit.configure({
         codeBlock: false,
+        link: false,
+        underline: false,
+        trailingNode: false,
       }),
       Underline,
       LinkExt.configure({
@@ -98,6 +104,7 @@ export default function TipTapEditor({
     ],
     content: content || { type: "doc", content: [{ type: "paragraph" }] },
     immediatelyRender: false,
+    shouldRerenderOnTransaction: true,
     onUpdate: ({ editor }) => {
       onChange?.(editor.getJSON());
     },
@@ -106,35 +113,10 @@ export default function TipTapEditor({
   const uploadFile = useCallback(
     async (file: File): Promise<string | null> => {
       setUploadProgress(0);
-      const formData = new FormData();
-      formData.append("file", file);
+      onUploadingChange?.(true);
 
       try {
-        const url = await new Promise<string>((resolve, reject) => {
-          const xhr = new XMLHttpRequest();
-          xhr.upload.addEventListener("progress", (e) => {
-            if (e.lengthComputable) {
-              setUploadProgress(Math.round((e.loaded / e.total) * 100));
-            }
-          });
-          xhr.addEventListener("load", () => {
-            if (xhr.status >= 200 && xhr.status < 300) {
-              const data = JSON.parse(xhr.responseText);
-              resolve(data.url);
-            } else {
-              try {
-                const data = JSON.parse(xhr.responseText);
-                reject(new Error(data.error || `업로드 실패 (${xhr.status})`));
-              } catch {
-                reject(new Error(`업로드 실패 (${xhr.status})`));
-              }
-            }
-          });
-          xhr.addEventListener("error", () => reject(new Error("네트워크 오류가 발생했습니다.")));
-          xhr.addEventListener("abort", () => reject(new Error("업로드가 취소되었습니다.")));
-          xhr.open("POST", "/api/upload");
-          xhr.send(formData);
-        });
+        const url = await uploadMedia(file, setUploadProgress);
         return url;
       } catch (err) {
         console.error("Upload error:", err);
@@ -142,9 +124,10 @@ export default function TipTapEditor({
         return null;
       } finally {
         setUploadProgress(null);
+        onUploadingChange?.(false);
       }
     },
-    [toast]
+    [toast, onUploadingChange]
   );
 
   const handleImageUpload = useCallback(() => {
@@ -193,7 +176,7 @@ export default function TipTapEditor({
   useEffect(() => {
     if (!htmlMode || !editor) return;
     const timer = setTimeout(() => {
-      editor.commands.setContent(htmlSource, false);
+      editor.commands.setContent(htmlSource, { emitUpdate: false });
       onChange?.(editor.getJSON());
     }, 300);
     return () => clearTimeout(timer);
@@ -206,7 +189,7 @@ export default function TipTapEditor({
       setHtmlSource(editor.getHTML());
       setHtmlMode(true);
     } else {
-      editor.commands.setContent(htmlSource, false);
+      editor.commands.setContent(htmlSource, { emitUpdate: false });
       onChange?.(editor.getJSON());
       setHtmlMode(false);
     }

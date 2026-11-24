@@ -33,7 +33,7 @@ const ResizableImageRenderer = Image.extend({
     ];
   },
 });
-import TextStyle from "@tiptap/extension-text-style";
+import { TextStyle } from "@tiptap/extension-text-style";
 import Color from "@tiptap/extension-color";
 import { FontSize } from "@/components/editor/font-size";
 import { LineHeight } from "@/components/editor/line-height";
@@ -219,7 +219,7 @@ export default function PostRenderer({ content }: PostRendererProps) {
 
   const editor = useEditor({
     extensions: [
-      StarterKit.configure({ codeBlock: false }),
+      StarterKit.configure({ codeBlock: false, link: false, underline: false, trailingNode: false }),
       Underline,
       Link.configure({ openOnClick: true }),
       ResizableImageRenderer,
