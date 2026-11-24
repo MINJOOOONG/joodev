@@ -305,7 +305,7 @@
 }
 
 .tiptap div[data-youtube-video] iframe {
-  @apply w-full aspect-video rounded-xl;
+  @apply w-full h-auto aspect-video rounded-xl;
 }
 
 .tiptap p.is-editor-empty:first-child::before {
@@ -434,7 +434,7 @@
 }
 
 .article-content div[data-youtube-video] iframe {
-  @apply w-full aspect-video rounded-2xl;
+  @apply w-full h-auto aspect-video rounded-2xl;
 }
 
 /* Details / 접은글 (Reader) */

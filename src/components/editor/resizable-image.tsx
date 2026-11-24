@@ -109,7 +109,7 @@ function ResizableImageView({
   /* ── Drag & Drop for gallery grouping ── */
   const handleDragStart = useCallback(
     (e: React.DragEvent) => {
-      const pos = typeof getPos === "function" ? getPos() : -1;
+      const pos = (typeof getPos === "function" ? getPos() : undefined) ?? -1;
       dragSourcePos = pos;
       dragSourceGalleryId = galleryId || null;
       e.dataTransfer.setData("application/x-image-gallery", String(pos));
@@ -124,7 +124,7 @@ function ResizableImageView({
       if (!e.dataTransfer.types.includes("application/x-image-gallery"))
         return;
 
-      const myPos = typeof getPos === "function" ? getPos() : -1;
+      const myPos = (typeof getPos === "function" ? getPos() : undefined) ?? -1;
       if (myPos === dragSourcePos) return; // can't drop on self
 
       e.preventDefault();
@@ -150,7 +150,7 @@ function ResizableImageView({
 
       if (!editor || dragSourcePos === null || dragSourcePos < 0) return;
 
-      const myPos = typeof getPos === "function" ? getPos() : -1;
+      const myPos = (typeof getPos === "function" ? getPos() : undefined) ?? -1;
       if (myPos < 0 || myPos === dragSourcePos) return;
 
       const sourceNode = editor.state.doc.nodeAt(dragSourcePos);

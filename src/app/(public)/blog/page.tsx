@@ -4,7 +4,7 @@ import BlogListClient from "./blog-list-client";
 export const revalidate = 60;
 
 export const metadata = {
-  title: "Blog | JooDev",
+  title: "Blog",
   description: "모든 블로그 게시글 목록",
 };
 

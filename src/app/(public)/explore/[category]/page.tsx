@@ -33,7 +33,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { category } = await params;
   const label = VALID_CATEGORIES[category];
   return {
-    title: label ? `${label} | Explore | JooDev` : "Not Found",
+    title: label ? `${label} | Explore` : "Not Found",
     description: label ? `${label} 카테고리의 글 모음` : undefined,
   };
 }

@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/db";
 import { getPostBySlug } from "@/lib/queries";
+import { SITE_URL } from "@/lib/site";
 import { formatDate } from "@/lib/utils";
 import PostRenderer from "@/components/ui/post-renderer";
 import Link from "next/link";
@@ -33,10 +34,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return {
     title: post.title,
     description: post.excerpt,
+    alternates: { canonical: `${SITE_URL}/blog/${post.slug}` },
     openGraph: {
       title: post.title,
       description: post.excerpt,
       type: "article",
+      url: `${SITE_URL}/blog/${post.slug}`,
       publishedTime: post.publishedAt?.toISOString(),
       ...(post.coverUrl && { images: [{ url: post.coverUrl }] }),
     },

@@ -6,7 +6,7 @@ import ExploreContent from "./explore-content";
 export const revalidate = 3600;
 
 export const metadata: Metadata = {
-  title: "Explore | JooDev",
+  title: "Explore",
   description: "카테고리별 글을 둘러보세요.",
 };
 

@@ -1,15 +1,10 @@
 import { SignJWT, jwtVerify } from "jose";
 import { cookies } from "next/headers";
-import bcrypt from "bcryptjs";
 import { getSecret, SESSION_COOKIE, SESSION_MAX_AGE } from "./session";
 
 export { getSecret, SESSION_COOKIE, SESSION_MAX_AGE } from "./session";
 
-export function verifyPassword(password: string): boolean {
-  const hash = process.env.ADMIN_PASSWORD_HASH;
-  if (!hash) throw new Error("ADMIN_PASSWORD_HASH is not set");
-  return bcrypt.compareSync(password, hash);
-}
+export { verifyPassword, AdminAuthConfigurationError } from "./admin-password";
 
 export async function createSession(): Promise<string> {
   const token = await new SignJWT({ role: "admin" })
@@ -39,7 +34,7 @@ export async function getSession(): Promise<{ role: string } | null> {
 
   try {
     const { payload } = await jwtVerify(token, getSecret());
-    return payload as { role: string };
+    return payload.role === "admin" ? { role: "admin" } : null;
   } catch {
     return null;
   }

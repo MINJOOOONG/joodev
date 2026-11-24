@@ -8,7 +8,7 @@ import { GET as getPost } from "../src/app/api/posts/[id]/route";
 import { GET as listPosts } from "../src/app/api/posts/route";
 import { GET as checkAuth } from "../src/app/api/auth/check/route";
 import { prisma } from "../src/lib/db";
-import { middleware } from "../src/middleware";
+import { proxy } from "../src/proxy";
 
 const originalSecret = process.env.SESSION_SECRET;
 const secret = randomBytes(32).toString("hex");
@@ -127,8 +127,8 @@ test("authentication checks reject signed tokens without the admin role", async 
 });
 
 test("protected mutations reject non-admin sessions and accept admin sessions", async () => {
-  const denied = await middleware(request("/api/posts/private-draft", await token("reader"), "PUT"));
+  const denied = await proxy(request("/api/posts/private-draft", await token("reader"), "PUT"));
   assert.equal(denied.status, 401);
-  const allowed = await middleware(request("/api/posts/private-draft", await token(), "PUT"));
+  const allowed = await proxy(request("/api/posts/private-draft", await token(), "PUT"));
   assert.equal(allowed.headers.get("x-middleware-next"), "1");
 });

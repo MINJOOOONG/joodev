@@ -1,84 +1,80 @@
+import { randomUUID } from "node:crypto";
 import { NextRequest, NextResponse } from "next/server";
 import { put } from "@vercel/blob";
-import { writeFile, mkdir } from "fs/promises";
-import path from "path";
+import { generateClientTokenFromReadWriteToken } from "@vercel/blob/client";
+import { writeFile, mkdir } from "node:fs/promises";
+import path from "node:path";
+import { isAdminRequest } from "@/lib/session";
+import { MAX_UPLOAD_BYTES, UPLOAD_CONTENT_TYPES, uploadValidationError } from "@/lib/upload-policy";
 
-const ALLOWED_IMAGE_TYPES = [
-  "image/jpeg",
-  "image/png",
-  "image/webp",
-  "image/gif",
-];
-const ALLOWED_VIDEO_TYPES = ["video/mp4", "video/webm"];
-const ALLOWED_TYPES = [...ALLOWED_IMAGE_TYPES, ...ALLOWED_VIDEO_TYPES];
-const MAX_FILE_SIZE = 50 * 1024 * 1024; // 50MB
+export const runtime = "nodejs";
 
-const isVercel = !!process.env.VERCEL;
-
-async function uploadToLocal(file: File, filename: string): Promise<string> {
-  const uploadDir = path.join(process.cwd(), "public", "uploads");
-  await mkdir(uploadDir, { recursive: true });
-
-  const buffer = Buffer.from(await file.arrayBuffer());
-  const filePath = path.join(uploadDir, path.basename(filename));
-  await writeFile(filePath, buffer);
-
-  return `/uploads/${path.basename(filename)}`;
-}
-
-async function uploadToBlob(file: File, filename: string): Promise<string> {
-  const blob = await put(filename, file, {
-    access: "public",
-    addRandomSuffix: false,
-  });
-  return blob.url;
+function filenameFor(type: string) {
+  const extension = UPLOAD_CONTENT_TYPES[type as keyof typeof UPLOAD_CONTENT_TYPES];
+  return `${Date.now()}-${randomUUID()}.${extension}`;
 }
 
 export async function POST(request: NextRequest) {
-  try {
-    const formData = await request.formData();
-    const file = formData.get("file") as File | null;
+  if (!(await isAdminRequest(request))) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
 
-    if (!file) {
+  try {
+    const useBlob = !!process.env.BLOB_READ_WRITE_TOKEN;
+    if (!useBlob && process.env.VERCEL) {
+      return NextResponse.json({ error: "현재 파일을 업로드할 수 없습니다." }, { status: 503 });
+    }
+
+    if (request.headers.get("content-type")?.includes("application/json")) {
+      const file = await request.json();
+      if (!file || typeof file.type !== "string" || typeof file.size !== "number") {
+        return NextResponse.json({ error: "파일 정보가 올바르지 않습니다." }, { status: 400 });
+      }
+      const error = uploadValidationError(file);
+      if (error) return NextResponse.json({ error }, { status: 400 });
+      if (!useBlob) return NextResponse.json({ strategy: "local" });
+
+      const pathname = `blog/${filenameFor(file.type)}`;
+      // File bytes go directly to Blob. Only a token limited to this one media
+      // path, content type, size and expiration leaves the server.
+      const token = await generateClientTokenFromReadWriteToken({
+        pathname,
+        allowedContentTypes: [file.type],
+        maximumSizeInBytes: MAX_UPLOAD_BYTES,
+        validUntil: Date.now() + 10 * 60 * 1000,
+        addRandomSuffix: true,
+        allowOverwrite: false,
+      });
+      return NextResponse.json(
+        { strategy: "blob", pathname, token },
+        { headers: { "Cache-Control": "no-store" } }
+      );
+    }
+
+    // Local uploads, and small uploads from editors opened before an update.
+    const formData = await request.formData();
+    const file = formData.get("file");
+    if (!(file instanceof File)) {
       return NextResponse.json({ error: "파일이 선택되지 않았습니다." }, { status: 400 });
     }
+    const error = uploadValidationError(file);
+    if (error) return NextResponse.json({ error }, { status: 400 });
 
-    if (!ALLOWED_TYPES.includes(file.type)) {
-      return NextResponse.json(
-        { error: `지원하지 않는 파일 형식입니다: ${file.type}` },
-        { status: 400 }
-      );
+    const filename = filenameFor(file.type);
+    if (useBlob) {
+      const blob = await put(`blog/${filename}`, file, { access: "public" });
+      return NextResponse.json({ url: blob.url });
     }
 
-    if (file.size > MAX_FILE_SIZE) {
-      return NextResponse.json(
-        { error: "파일 크기가 50MB를 초과합니다." },
-        { status: 400 }
-      );
+    const uploadDir = path.join(process.cwd(), "public", "uploads");
+    await mkdir(uploadDir, { recursive: true });
+    await writeFile(path.join(uploadDir, filename), Buffer.from(await file.arrayBuffer()));
+    return NextResponse.json({ url: `/uploads/${filename}` });
+  } catch (error) {
+    if (error instanceof SyntaxError) {
+      return NextResponse.json({ error: "잘못된 요청입니다." }, { status: 400 });
     }
-
-    const ext = file.name.split(".").pop() || "bin";
-    const filename = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
-
-    const useBlob = !!process.env.BLOB_READ_WRITE_TOKEN;
-
-    if (!useBlob && isVercel) {
-      return NextResponse.json(
-        { error: "이미지 저장소가 설정되지 않았습니다. Vercel Blob 토큰을 환경변수에 추가해주세요." },
-        { status: 500 }
-      );
-    }
-
-    const url = useBlob
-      ? await uploadToBlob(file, `blog/${filename}`)
-      : await uploadToLocal(file, filename);
-
-    return NextResponse.json({ url });
-  } catch (err) {
-    console.error("Upload error:", err);
-    return NextResponse.json(
-      { error: "업로드에 실패했습니다. 잠시 후 다시 시도해주세요." },
-      { status: 500 }
-    );
+    console.error("Media upload failed");
+    return NextResponse.json({ error: "업로드에 실패했습니다. 잠시 후 다시 시도해주세요." }, { status: 500 });
   }
 }

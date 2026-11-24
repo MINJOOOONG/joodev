@@ -6,6 +6,7 @@ import dynamic from "next/dynamic";
 import Image from "next/image";
 import type { JSONContent } from "@tiptap/react";
 import { useToast } from "@/components/ui/toast";
+import { uploadMedia } from "@/lib/upload-client";
 
 const TipTapEditor = dynamic(() => import("./tiptap-editor"), {
   ssr: false,
@@ -67,6 +68,7 @@ export default function PostForm({ initialData }: PostFormProps) {
   );
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [editorUploading, setEditorUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const isEdit = !!initialData?.id;
@@ -127,17 +129,18 @@ export default function PostForm({ initialData }: PostFormProps) {
   const markClean = useCallback(() => {
     lastSavedRef.current = { title, excerpt, category, tags, images, coverUrl, startDate, endDate };
     contentDirtyRef.current = false;
+    imagesDirtyRef.current = false;
     setIsDirty(false);
   }, [title, excerpt, category, tags, images, coverUrl, startDate, endDate]);
 
   const handleSave = useCallback(
-    async (saveStatus: "DRAFT" | "PUBLISHED") => {
+    async (publish: boolean) => {
       if (!title.trim()) {
         toast("제목을 입력해주세요.", "error");
         return;
       }
 
-      if (saveStatus === "PUBLISHED") {
+      if (publish) {
         const hasContent =
           content?.content?.some(
             (node) =>
@@ -154,10 +157,10 @@ export default function PostForm({ initialData }: PostFormProps) {
       setSaving(true);
 
       try {
-        const tagList = tags
+        const tagList = Array.from(new Set(tags
           .split(",")
           .map((t) => t.trim())
-          .filter(Boolean);
+          .filter(Boolean)));
 
         const finalCoverUrl = coverUrl || images[0] || null;
 
@@ -168,7 +171,8 @@ export default function PostForm({ initialData }: PostFormProps) {
           coverUrl: finalCoverUrl,
           images,
           category,
-          status: saveStatus,
+          // Ordinary saves preserve the server's current publication status.
+          ...(publish ? { status: "PUBLISHED" } : {}),
           tags: tagList,
           startDate: startDate || null,
           endDate: endDate || null,
@@ -192,13 +196,13 @@ export default function PostForm({ initialData }: PostFormProps) {
         const data = await res.json();
 
         // Navigate first for instant feel, then clean up state
-        if (saveStatus === "PUBLISHED" && data.slug) {
+        if (publish && data.slug) {
           toast("글이 발행되었습니다.", "success");
           // Mark clean before push to prevent beforeunload warning
-          contentDirtyRef.current = false;
+          markClean();
           router.push(`/blog/${data.slug}`);
         } else if (!isEdit) {
-          contentDirtyRef.current = false;
+          markClean();
           router.push(`/admin/posts/${data.id}/edit`);
           toast("저장되었습니다.", "success");
         } else {
@@ -234,22 +238,8 @@ export default function PostForm({ initialData }: PostFormProps) {
     const newImages: string[] = [];
 
     for (const file of filesToUpload) {
-      const formData = new FormData();
-      formData.append("file", file);
-
       try {
-        const res = await fetch("/api/upload", { method: "POST", body: formData });
-        if (res.ok) {
-          const data = await res.json();
-          newImages.push(data.url);
-        } else {
-          let errorMsg = `업로드 실패 (${res.status})`;
-          try {
-            const data = await res.json();
-            errorMsg = data.error || errorMsg;
-          } catch {}
-          toast(errorMsg, "error");
-        }
+        newImages.push(await uploadMedia(file));
       } catch (err) {
         toast(`네트워크 오류: ${err instanceof Error ? err.message : "알 수 없는 오류"}`, "error");
       }
@@ -295,16 +285,16 @@ export default function PostForm({ initialData }: PostFormProps) {
         <div className="flex items-center gap-2">
           <button
             type="button"
-            onClick={() => handleSave("DRAFT")}
-            disabled={saving}
+            onClick={() => handleSave(false)}
+            disabled={saving || uploading || editorUploading}
             className="btn-secondary px-3 py-1.5 text-xs"
           >
             저장
           </button>
           <button
             type="button"
-            onClick={() => handleSave("PUBLISHED")}
-            disabled={saving}
+            onClick={() => handleSave(true)}
+            disabled={saving || uploading || editorUploading}
             className="btn-primary px-4 py-1.5 text-xs"
           >
             {saving ? "저장 중..." : "발행"}
@@ -479,6 +469,7 @@ export default function PostForm({ initialData }: PostFormProps) {
       <TipTapEditor
         content={content}
         onChange={handleContentChange}
+        onUploadingChange={setEditorUploading}
       />
     </div>
   );

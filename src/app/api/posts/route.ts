@@ -19,6 +19,9 @@ export async function GET(request: NextRequest) {
 
 // POST /api/posts - create a new post
 export async function POST(request: NextRequest) {
+  if (!(await isAdminRequest(request))) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
   try {
     const body = await request.json();
     const { title, excerpt, contentJson, coverUrl, images, status, tags, category, startDate, endDate } = body;
